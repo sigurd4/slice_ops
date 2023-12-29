@@ -2,6 +2,7 @@
 name = "slice_ops"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
 description = "A selection of useful slice operations that run at compile-time"
 repository = "https://github.com/sigurd4/slice_ops"
 keywords = ["slice", "const", "util", "ops"]
