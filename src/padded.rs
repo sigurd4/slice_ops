@@ -101,9 +101,11 @@ where
             _pad: ManuallyDrop::new(MaybeUninit::uninit())
         }
     }
-    pub fn into_inner(self) -> T
+    pub const fn into_inner(self) -> T
     {
-        self.value
+        let value = unsafe {(&self.value as *const T).read()};
+        core::mem::forget(self);
+        value
     }
     pub const fn borrow(&self) -> &T
     {
@@ -114,6 +116,38 @@ where
         &mut self.value
     }
 }
+
+impl<T, const WIDTH1: usize, const WIDTH2: usize> Padded<Padded<T, WIDTH1>, WIDTH2>
+where
+    [(); WIDTH1 - 1]:,
+    [(); WIDTH2 - 1]:
+{
+    pub const fn flatten(self) -> Padded<T, {WIDTH1*WIDTH2}>
+    where
+        [(); WIDTH1*WIDTH2 - 1]:
+    {
+        Padded::new(self.into_inner().into_inner())
+    }
+
+    pub const fn flatten_slice<const M: usize>(slice: &[Self]) -> &[Padded<T, {WIDTH1*WIDTH2}>]
+    where
+        [(); WIDTH1*WIDTH2 - 1]:
+    {
+        unsafe {
+            core::slice::from_raw_parts(slice.as_ptr().cast(), slice.len())
+        }
+    }
+    
+    pub const fn flatten_mut_slice<const M: usize>(slice: &mut [Self]) -> &mut [Padded<T, {WIDTH1*WIDTH2}>]
+    where
+        [(); WIDTH1*WIDTH2 - 1]:
+    {
+        unsafe {
+            core::slice::from_raw_parts_mut(slice.as_mut_ptr().cast(), slice.len())
+        }
+    }
+}
+
 impl<T, const WIDTH: usize> Borrow<T> for Padded<T, WIDTH>
 where
     [(); WIDTH - 1]:

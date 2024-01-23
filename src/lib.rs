@@ -4,6 +4,7 @@
 #![feature(const_slice_split_at_mut)]
 #![feature(const_mut_refs)]
 #![feature(slice_from_ptr_range)]
+#![feature(const_refs_to_cell)]
 #![feature(const_slice_from_raw_parts_mut)]
 
 #![feature(generic_const_exprs)]
@@ -11,8 +12,7 @@
 moddef::moddef!(
     flat(pub) mod {
         slice_ops_,
-        padded,
-        //padded_slice
+        padded
     }
 );
 
