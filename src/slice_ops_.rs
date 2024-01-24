@@ -1,5 +1,7 @@
 
-use core::mem::MaybeUninit;
+use core::mem::{ManuallyDrop, MaybeUninit};
+
+use core::alloc::Allocator;
 
 pub use slice_trait::*;
 
@@ -114,6 +116,34 @@ where
 #[const_trait]
 pub trait SliceOps<T>: Slice<Item = T>
 {
+    #[cfg(feature = "std")]
+    fn fill_boxed<F>(fill: F, len: usize) -> Box<Self>
+    where
+        F: FnMut(usize) -> T;
+    #[cfg(feature = "std")]
+    fn rfill_boxed<F>(fill: F, len: usize) -> Box<Self>
+    where
+        F: FnMut(usize) -> T;
+        
+    #[cfg(feature = "std")]
+    fn fill_boxed_in<F, A>(fill: F, len: usize, alloc: A) -> Box<Self, A>
+    where
+        F: FnMut(usize) -> T,
+        A: Allocator;
+    #[cfg(feature = "std")]
+    fn rfill_boxed_in<F, A>(fill: F, len: usize, alloc: A) -> Box<Self, A>
+    where
+        F: FnMut(usize) -> T,
+        A: Allocator;
+
+    fn shift_many_left(&mut self, items: &mut [T]);
+    
+    fn shift_many_right(&mut self, items: &mut [T]);
+    
+    fn shift_left(&mut self, item: &mut T);
+
+    fn shift_right(&mut self, item: &mut T);
+
     fn split_len(&self, mid: usize) -> (usize, usize);
     fn rsplit_len(&self, mid: usize) -> (usize, usize);
 
@@ -224,10 +254,163 @@ pub trait SliceOps<T>: Slice<Item = T>
     fn spread_mut<const M: usize>(&mut self) -> [&mut [Padded<T, M>]; M]
     where
         [(); M - 1]:;
+        
+    /// Performs the bit-reverse permutation. Length must be a power of 2.
+    /// 
+    /// # Example
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let mut arr = [0b000, 0b001, 0b010, 0b011, 0b100, 0b101, 0b110, 0b111];
+    /// 
+    /// arr.as_mut_slice().bit_reverse_permutation();
+    /// 
+    /// assert_eq!(arr, [0b000, 0b100, 0b010, 0b110, 0b001, 0b101, 0b011, 0b111])
+    /// ```
+    fn bit_reverse_permutation(&mut self);
 }
 
 impl<T> const SliceOps<T> for [T]
 {
+    #[cfg(feature = "std")]
+    fn fill_boxed<F>(mut fill: F, len: usize) -> Box<Self>
+    where
+        F: FnMut(usize) -> T
+    {
+        let mut slice = unsafe {
+            Box::new_uninit_slice(len).assume_init()
+        };
+        let ptr: *mut T = slice.as_mut_ptr();
+        let mut i = 0;
+        while i < len
+        {
+            unsafe {
+                ptr.add(i).write(fill(i));
+            }
+            i += 1;
+        }
+        slice
+    }
+    #[cfg(feature = "std")]
+    fn rfill_boxed<F>(mut fill: F, len: usize) -> Box<Self>
+    where
+        F: FnMut(usize) -> T
+    {
+        let mut slice = unsafe {
+            Box::new_uninit_slice(len).assume_init()
+        };
+        if len != 0
+        {
+            let ptr: *mut T = slice.as_mut_ptr();
+            let mut i = len - 1;
+            loop
+            {
+                unsafe {
+                    ptr.add(i).write(fill(i));
+                }
+                if i == 0
+                {
+                    break
+                }
+                i -= 1;
+            }
+        }
+        slice
+    }
+    
+    #[cfg(feature = "std")]
+    fn fill_boxed_in<F, A>(mut fill: F, len: usize, alloc: A) -> Box<Self, A>
+    where
+        F: FnMut(usize) -> T,
+        A: Allocator
+    {
+        let mut slice = unsafe {
+            Box::new_uninit_slice_in(len, alloc).assume_init()
+        };
+        let ptr: *mut T = slice.as_mut_ptr();
+        let mut i = 0;
+        while i < len
+        {
+            unsafe {
+                ptr.add(i).write(fill(i));
+            }
+            i += 1;
+        }
+        slice
+    }
+    #[cfg(feature = "std")]
+    fn rfill_boxed_in<F, A>(mut fill: F, len: usize, alloc: A) -> Box<Self, A>
+    where
+        F: FnMut(usize) -> T,
+        A: Allocator
+    {
+        let mut slice = unsafe {
+            Box::new_uninit_slice_in(len, alloc).assume_init()
+        };
+        if len != 0
+        {
+            let ptr: *mut T = slice.as_mut_ptr();
+            let mut i = len - 1;
+            loop
+            {
+                unsafe {
+                    ptr.add(i).write(fill(i));
+                }
+                if i == 0
+                {
+                    break
+                }
+                i -= 1;
+            }
+        }
+        slice
+    }
+    
+    fn shift_many_left(&mut self, mut items: &mut [T])
+    {
+        let len = self.len();
+        let m = items.len();
+        unsafe {
+            items.rotate_left(m.saturating_sub(len));
+            core::ptr::swap_nonoverlapping(self.as_mut_ptr(), items.as_mut_ptr(), m.min(len));
+            self.rotate_left(m.min(len));
+        }
+    }
+    
+    fn shift_many_right(&mut self, items: &mut [T])
+    {
+        let len = self.len();
+        let m = items.len();
+        unsafe {
+            self.rotate_right(m.min(len));
+            core::ptr::swap_nonoverlapping(self.as_mut_ptr(), items.as_mut_ptr(), m.min(len));
+            items.rotate_right(m.saturating_sub(len));
+        }
+    }
+    
+    fn shift_left(&mut self, item: &mut T)
+    {
+        if self.len() > 0
+        {
+            unsafe {
+                core::ptr::swap_nonoverlapping(self.as_mut_ptr(), item as *mut T, 1);
+            }
+            self.rotate_left(1);
+        }
+    }
+
+    fn shift_right(&mut self, item: &mut T)
+    {
+        let len = self.len();
+        if len > 0
+        {
+            self.rotate_right(1);
+            unsafe {
+                core::ptr::swap_nonoverlapping(self.as_mut_ptr(), item as *mut T, 1);
+            }
+        }
+    }
+
     fn split_len(&self, mid: usize) -> (usize, usize)
     {
         crate::split_len(self.len(), mid)
@@ -276,4 +459,35 @@ impl<T> const SliceOps<T> for [T]
     {
         crate::spread_mut(self)
     }
+    
+    fn bit_reverse_permutation(&mut self)
+    {
+        let len = self.len();
+        assert!(len.is_power_of_two(), "Length must be a power of two.");
+
+        let mut i = 0;
+        while i < len/2
+        {
+            let j = i.reverse_bits() >> (len.leading_zeros() + 1);
+            if i != j
+            {
+                unsafe {
+                    core::ptr::swap_nonoverlapping(self.as_mut_ptr().add(i), self.as_mut_ptr().add(j), 1);
+                }
+            }
+            i += 1;
+        }
+    }
+}
+
+#[test]
+fn test()
+{
+    let mut a = [2, 1, 0];
+    let mut b = 3;
+
+    a.shift_right(&mut b);
+    
+    println!("a = {:?}", a);
+    println!("b = {:?}", b);
 }

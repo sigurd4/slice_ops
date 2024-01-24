@@ -1,4 +1,4 @@
-#![cfg_attr(not(test), no_std)]
+#![cfg_attr(not(any(feature = "std", test)), no_std)]
 
 #![feature(const_trait_impl)]
 #![feature(const_slice_split_at_mut)]
@@ -6,6 +6,8 @@
 #![feature(slice_from_ptr_range)]
 #![feature(const_refs_to_cell)]
 #![feature(const_slice_from_raw_parts_mut)]
+#![feature(allocator_api)]
+#![cfg_attr(feature = "std", feature(new_uninit))]
 
 #![feature(generic_const_exprs)]
 

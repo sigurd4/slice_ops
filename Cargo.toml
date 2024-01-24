@@ -9,6 +9,10 @@ keywords = ["slice", "const", "util", "ops"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = ["std"]
+std = []
+
 [dependencies]
 moddef = "0.2.2"
 slice_trait = "0.1.0"
