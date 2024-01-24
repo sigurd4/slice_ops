@@ -2,7 +2,7 @@
 use core::mem::{ManuallyDrop, MaybeUninit};
 
 use core::alloc::Allocator;
-use core::ops::{AddAssign, BitAndAssign, BitOrAssign, BitXorAssign, DivAssign, MulAssign, RemAssign, ShlAssign, ShrAssign, Sub, SubAssign};
+use core::ops::{AddAssign, BitAndAssign, BitOrAssign, BitXorAssign, DivAssign, MulAssign, Neg, RemAssign, ShlAssign, ShrAssign, Sub, SubAssign};
 
 pub use slice_trait::*;
 
@@ -171,6 +171,10 @@ pub trait SliceOps<T>: Slice<Item = T>
     where
         T: BitXorAssign<Rhs>,
         Rhs: Copy;
+        
+    fn neg_assign_all(&mut self)
+    where
+        T: Neg<Output = T>;
 
     fn shift_many_left(&mut self, items: &mut [T]);
     
@@ -456,6 +460,21 @@ impl<T> const SliceOps<T> for [T]
         for x in self.iter_mut()
         {
             *x ^= rhs;
+        }
+    }
+    
+    fn neg_assign_all(&mut self)
+    where
+        T: Neg<Output = T>
+    {
+        let mut i = 0;
+        while i < self.len()
+        {
+            unsafe {
+                let ptr = self.as_mut_ptr().add(i);
+                ptr.write(-ptr.read());
+            }
+            i += 1;
         }
     }
 
