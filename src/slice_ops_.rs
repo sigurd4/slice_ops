@@ -2,6 +2,7 @@
 use core::mem::{ManuallyDrop, MaybeUninit};
 
 use core::alloc::Allocator;
+use core::ops::{AddAssign, BitAndAssign, BitOrAssign, BitXorAssign, DivAssign, MulAssign, RemAssign, ShlAssign, ShrAssign, Sub, SubAssign};
 
 pub use slice_trait::*;
 
@@ -116,25 +117,60 @@ where
 #[const_trait]
 pub trait SliceOps<T>: Slice<Item = T>
 {
-    #[cfg(feature = "std")]
-    fn fill_boxed<F>(fill: F, len: usize) -> Box<Self>
+    fn differentiate(&mut self)
     where
-        F: FnMut(usize) -> T;
-    #[cfg(feature = "std")]
-    fn rfill_boxed<F>(fill: F, len: usize) -> Box<Self>
+        T: SubAssign<T> + Copy;
+    fn integrate(&mut self)
     where
-        F: FnMut(usize) -> T;
-        
-    #[cfg(feature = "std")]
-    fn fill_boxed_in<F, A>(fill: F, len: usize, alloc: A) -> Box<Self, A>
+        T: AddAssign<T> + Copy;
+
+    fn argmax(&self) -> Option<usize>
     where
-        F: FnMut(usize) -> T,
-        A: Allocator;
-    #[cfg(feature = "std")]
-    fn rfill_boxed_in<F, A>(fill: F, len: usize, alloc: A) -> Box<Self, A>
+        T: PartialOrd<T>;
+    fn argmin(&self) -> Option<usize>
     where
-        F: FnMut(usize) -> T,
-        A: Allocator;
+        T: PartialOrd<T>;
+
+    fn add_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: AddAssign<Rhs>,
+        Rhs: Copy;
+    fn sub_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: SubAssign<Rhs>,
+        Rhs: Copy;
+    fn mul_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: MulAssign<Rhs>,
+        Rhs: Copy;
+    fn div_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: DivAssign<Rhs>,
+        Rhs: Copy;
+    fn rem_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: RemAssign<Rhs>,
+        Rhs: Copy;
+    fn shl_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: ShlAssign<Rhs>,
+        Rhs: Copy;
+    fn shr_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: ShrAssign<Rhs>,
+        Rhs: Copy;
+    fn bitor_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: BitOrAssign<Rhs>,
+        Rhs: Copy;
+    fn bitand_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: BitAndAssign<Rhs>,
+        Rhs: Copy;
+    fn bitxor_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: BitXorAssign<Rhs>,
+        Rhs: Copy;
 
     fn shift_many_left(&mut self, items: &mut [T]);
     
@@ -272,101 +308,158 @@ pub trait SliceOps<T>: Slice<Item = T>
 
 impl<T> const SliceOps<T> for [T]
 {
-    #[cfg(feature = "std")]
-    fn fill_boxed<F>(mut fill: F, len: usize) -> Box<Self>
+    fn differentiate(&mut self)
     where
-        F: FnMut(usize) -> T
+        T: SubAssign<T> + Copy
     {
-        let mut slice = unsafe {
-            Box::new_uninit_slice(len).assume_init()
-        };
-        let ptr: *mut T = slice.as_mut_ptr();
-        let mut i = 0;
-        while i < len
+        let len = self.len();
+        if len > 0
         {
-            unsafe {
-                ptr.add(i).write(fill(i));
-            }
-            i += 1;
-        }
-        slice
-    }
-    #[cfg(feature = "std")]
-    fn rfill_boxed<F>(mut fill: F, len: usize) -> Box<Self>
-    where
-        F: FnMut(usize) -> T
-    {
-        let mut slice = unsafe {
-            Box::new_uninit_slice(len).assume_init()
-        };
-        if len != 0
-        {
-            let ptr: *mut T = slice.as_mut_ptr();
             let mut i = len - 1;
-            loop
+            while i > 0
             {
-                unsafe {
-                    ptr.add(i).write(fill(i));
-                }
-                if i == 0
-                {
-                    break
-                }
+                self[i] -= self[i - 1];
                 i -= 1;
             }
         }
-        slice
     }
-    
-    #[cfg(feature = "std")]
-    fn fill_boxed_in<F, A>(mut fill: F, len: usize, alloc: A) -> Box<Self, A>
+    fn integrate(&mut self)
     where
-        F: FnMut(usize) -> T,
-        A: Allocator
+        T: AddAssign<T> + Copy
     {
-        let mut slice = unsafe {
-            Box::new_uninit_slice_in(len, alloc).assume_init()
-        };
-        let ptr: *mut T = slice.as_mut_ptr();
-        let mut i = 0;
+        let len = self.len();
+        let mut i = 1;
         while i < len
         {
-            unsafe {
-                ptr.add(i).write(fill(i));
-            }
+            self[i] += self[i - 1];
             i += 1;
         }
-        slice
     }
-    #[cfg(feature = "std")]
-    fn rfill_boxed_in<F, A>(mut fill: F, len: usize, alloc: A) -> Box<Self, A>
+
+    fn argmax(&self) -> Option<usize>
     where
-        F: FnMut(usize) -> T,
-        A: Allocator
+        T: PartialOrd<T>
     {
-        let mut slice = unsafe {
-            Box::new_uninit_slice_in(len, alloc).assume_init()
-        };
-        if len != 0
+        match self.iter().enumerate().reduce(|a, b| if a.1 >= b.1 {a} else {b})
         {
-            let ptr: *mut T = slice.as_mut_ptr();
-            let mut i = len - 1;
-            loop
-            {
-                unsafe {
-                    ptr.add(i).write(fill(i));
-                }
-                if i == 0
-                {
-                    break
-                }
-                i -= 1;
-            }
+            Some((i, _)) => Some(i),
+            None => None
         }
-        slice
     }
-    
-    fn shift_many_left(&mut self, mut items: &mut [T])
+        
+    fn argmin(&self) -> Option<usize>
+    where
+        T: PartialOrd<T>
+    {
+        match self.iter().enumerate().reduce(|a, b| if a.1 <= b.1 {a} else {b})
+        {
+            Some((i, _)) => Some(i),
+            None => None
+        }
+    }
+
+    fn add_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: AddAssign<Rhs>,
+        Rhs: Copy
+    {
+        for x in self.iter_mut()
+        {
+            *x += rhs;
+        }
+    }
+    fn sub_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: SubAssign<Rhs>,
+        Rhs: Copy
+    {
+        for x in self.iter_mut()
+        {
+            *x -= rhs;
+        }
+    }
+    fn mul_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: MulAssign<Rhs>,
+        Rhs: Copy
+    {
+        for x in self.iter_mut()
+        {
+            *x *= rhs;
+        }
+    }
+    fn div_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: DivAssign<Rhs>,
+        Rhs: Copy
+    {
+        for x in self.iter_mut()
+        {
+            *x /= rhs;
+        }
+    }
+    fn rem_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: RemAssign<Rhs>,
+        Rhs: Copy
+    {
+        for x in self.iter_mut()
+        {
+            *x %= rhs;
+        }
+    }
+    fn shl_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: ShlAssign<Rhs>,
+        Rhs: Copy
+    {
+        for x in self.iter_mut()
+        {
+            *x <<= rhs;
+        }
+    }
+    fn shr_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: ShrAssign<Rhs>,
+        Rhs: Copy
+    {
+        for x in self.iter_mut()
+        {
+            *x >>= rhs;
+        }
+    }
+    fn bitor_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: BitOrAssign<Rhs>,
+        Rhs: Copy
+    {
+        for x in self.iter_mut()
+        {
+            *x |= rhs;
+        }
+    }
+    fn bitand_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: BitAndAssign<Rhs>,
+        Rhs: Copy
+    {
+        for x in self.iter_mut()
+        {
+            *x &= rhs;
+        }
+    }
+    fn bitxor_assign_all<Rhs>(&mut self, rhs: Rhs)
+    where
+        T: BitXorAssign<Rhs>,
+        Rhs: Copy
+    {
+        for x in self.iter_mut()
+        {
+            *x ^= rhs;
+        }
+    }
+
+    fn shift_many_left(&mut self, items: &mut [T])
     {
         let len = self.len();
         let m = items.len();
