@@ -575,18 +575,29 @@ impl<T> const SliceOps<T> for [T]
     fn bit_reverse_permutation(&mut self)
     {
         let len = self.len();
+        if len <= 2
+        {
+            return;
+        }
         assert!(len.is_power_of_two(), "Length must be a power of two.");
 
         let mut i = 0;
-        while i < len/2
+        let mut j = 0;
+        while i < len - 2
         {
-            let j = i.reverse_bits() >> (len.leading_zeros() + 1);
-            if i != j
+            if i < j
             {
                 unsafe {
                     core::ptr::swap_nonoverlapping(self.as_mut_ptr().add(i), self.as_mut_ptr().add(j), 1);
                 }
             }
+            let mut k = len/2;
+            while k <= j
+            {
+                j -= k;
+                k /= 2;
+            }
+            j += k;
             i += 1;
         }
     }
