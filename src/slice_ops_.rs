@@ -308,6 +308,25 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// assert_eq!(arr, [0b000, 0b100, 0b010, 0b110, 0b001, 0b101, 0b011, 0b111])
     /// ```
     fn bit_reverse_permutation(&mut self);
+
+    fn trim<F>(&self, trim: F) -> &[T]
+    where
+        F: FnMut(&T) -> bool;
+    fn trim_front<F>(&self, trim: F) -> &[T]
+    where
+        F: FnMut(&T) -> bool;
+    fn trim_back<F>(&self, trim: F) -> &[T]
+    where
+        F: FnMut(&T) -> bool;
+    fn trim_mut<F>(&mut self, trim: F) -> &mut [T]
+    where
+        F: FnMut(&T) -> bool;
+    fn trim_front_mut<F>(&mut self, trim: F) -> &mut [T]
+    where
+        F: FnMut(&T) -> bool;
+    fn trim_back_mut<F>(&mut self, trim: F) -> &mut [T]
+    where
+        F: FnMut(&T) -> bool;
 }
 
 impl<T> const SliceOps<T> for [T]
@@ -601,16 +620,79 @@ impl<T> const SliceOps<T> for [T]
             i += 1;
         }
     }
+    
+    fn trim<F>(&self, mut trim: F) -> &[T]
+    where
+        F: FnMut(&T) -> bool
+    {
+        self.trim_back(&mut trim).trim_front(trim)
+    }
+    fn trim_front<F>(&self, mut trim: F) -> &[T]
+    where
+        F: FnMut(&T) -> bool
+    {
+        let mut slice = self;
+
+        while slice.first().map(&mut trim).unwrap_or(false)
+        {
+            slice = slice.get(1..).unwrap_or_default()
+        }
+
+        slice
+    }
+    fn trim_back<F>(&self, mut trim: F) -> &[T]
+    where
+        F: FnMut(&T) -> bool
+    {
+        let mut slice = self;
+
+        while slice.last().map(&mut trim).unwrap_or(false)
+        {
+            slice = slice.get(..slice.len() - 1).unwrap_or_default()
+        }
+
+        slice
+    }
+    fn trim_mut<F>(&mut self, mut trim: F) -> &mut [T]
+    where
+        F: FnMut(&T) -> bool
+    {
+        self.trim_back_mut(&mut trim).trim_front_mut(trim)
+    }
+    fn trim_front_mut<F>(&mut self, mut trim: F) -> &mut [T]
+    where
+        F: FnMut(&T) -> bool
+    {
+        let mut slice = self;
+
+        while slice.first().map(&mut trim).unwrap_or(false)
+        {
+            slice = slice.get_mut(1..).unwrap_or_default()
+        }
+
+        slice
+    }
+    fn trim_back_mut<F>(&mut self, mut trim: F) -> &mut [T]
+    where
+        F: FnMut(&T) -> bool
+    {
+        let mut slice = self;
+
+        while slice.last().map(&mut trim).unwrap_or(false)
+        {
+            slice = slice.get_mut(..slice.len() - 1).unwrap_or_default()
+        }
+
+        slice
+    }
 }
 
 #[test]
 fn test()
 {
-    let mut a = [2, 1, 0];
-    let mut b = 3;
-
-    a.shift_right(&mut b);
+    let a = [0, 1, 0];
     
-    println!("a = {:?}", a);
+    let b = a.trim_back(|a| *a == 0);
+
     println!("b = {:?}", b);
 }
