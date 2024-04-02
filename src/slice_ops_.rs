@@ -303,11 +303,25 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// 
     /// let mut arr = [0b000, 0b001, 0b010, 0b011, 0b100, 0b101, 0b110, 0b111];
     /// 
-    /// arr.as_mut_slice().bit_reverse_permutation();
+    /// arr.as_mut_slice().bit_rev_permutation();
     /// 
     /// assert_eq!(arr, [0b000, 0b100, 0b010, 0b110, 0b001, 0b101, 0b011, 0b111])
     /// ```
-    fn bit_reverse_permutation(&mut self);
+    fn bit_rev_permutation(&mut self);
+    
+    /// Performs the grey code permutation. Length must be a power of 2.
+    /// 
+    /// # Example
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let mut arr = [0b000, 0b001, 0b010, 0b011, 0b100, 0b101, 0b110, 0b111];
+    /// 
+    /// arr.as_mut_slice().grey_code_permutation();
+    /// 
+    /// assert_eq!(arr, [0b000, 0b001, 0b011, 0b010, 0b110, 0b111, 0b101, 0b100])
+    /// ```
+    fn grey_code_permutation(&mut self);
 
     fn trim<F>(&self, trim: F) -> &[T]
     where
@@ -591,7 +605,7 @@ impl<T> const SliceOps<T> for [T]
         crate::spread_mut(self)
     }
     
-    fn bit_reverse_permutation(&mut self)
+    fn bit_rev_permutation(&mut self)
     {
         let len = self.len();
         if len <= 2
@@ -617,6 +631,33 @@ impl<T> const SliceOps<T> for [T]
                 k /= 2;
             }
             j += k;
+            i += 1;
+        }
+    }
+    
+    fn grey_code_permutation(&mut self)
+    {
+        let len = self.len();
+        if len <= 2
+        {
+            return;
+        }
+        assert!(len.is_power_of_two(), "Length must be a power of two.");
+
+        let mut i = 0;
+        while i < len
+        {
+            let mut j = i ^ (i >> 1);
+            while j < i
+            {
+                j = j ^ (j >> 1);
+            }
+            if j != i
+            {
+                unsafe {
+                    core::ptr::swap_nonoverlapping(self.as_mut_ptr().add(i), self.as_mut_ptr().add(j), 1);
+                }
+            }
             i += 1;
         }
     }
