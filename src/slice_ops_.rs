@@ -623,7 +623,7 @@ impl<T> const SliceOps<T> for [T]
         let mut j = len/radix + 1;
         while i < len - 1
         {
-            if i < j
+            if i < j - 1
             {
                 unsafe {
                     core::ptr::swap_nonoverlapping(self.as_mut_ptr().add(i), self.as_mut_ptr().add(j - 1), 1);
