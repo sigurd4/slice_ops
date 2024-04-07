@@ -6,7 +6,7 @@ use core::ops::{AddAssign, BitAndAssign, BitOrAssign, BitXorAssign, DivAssign, M
 
 pub use slice_trait::*;
 
-use crate::Padded;
+use crate::{is_power_of, Padded};
 
 #[inline]
 pub const fn split_len(len: usize, mid: usize) -> (usize, usize)
@@ -114,7 +114,6 @@ where
     }
 }
 
-#[const_trait]
 pub trait SliceOps<T>: Slice<Item = T>
 {
     fn differentiate(&mut self)
@@ -308,6 +307,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// assert_eq!(arr, [0b000, 0b100, 0b010, 0b110, 0b001, 0b101, 0b011, 0b111])
     /// ```
     fn bit_rev_permutation(&mut self);
+    fn digit_rev_permutation(&mut self, radix: usize);
     
     /// Performs the grey code permutation. Length must be a power of 2.
     /// 
@@ -607,28 +607,33 @@ impl<T> const SliceOps<T> for [T]
     
     fn bit_rev_permutation(&mut self)
     {
+        self.digit_rev_permutation(2)
+    }
+    
+    fn digit_rev_permutation(&mut self, radix: usize)
+    {
         let len = self.len();
-        if len <= 2
+        if len <= radix
         {
             return;
         }
-        assert!(len.is_power_of_two(), "Length must be a power of two.");
-
-        let mut i = 0;
-        let mut j = 0;
-        while i < len - 2
+        assert!(is_power_of(len, radix), "Length must be a power of radix.");
+    
+        let mut i = 1;
+        let mut j = len/radix + 1;
+        while i < len - 1
         {
             if i < j
             {
                 unsafe {
-                    core::ptr::swap_nonoverlapping(self.as_mut_ptr().add(i), self.as_mut_ptr().add(j), 1);
+                    core::ptr::swap_nonoverlapping(self.as_mut_ptr().add(i), self.as_mut_ptr().add(j - 1), 1);
                 }
             }
-            let mut k = len/2;
-            while k <= j
+            let mut k = len/radix;
+            while k*(radix - 1) < j
             {
-                j -= k;
-                k /= 2;
+                j -= k*(radix - 1);
+                k /= radix;
             }
             j += k;
             i += 1;

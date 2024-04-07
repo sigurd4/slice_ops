@@ -18,6 +18,11 @@ moddef::moddef!(
     }
 );
 
+pub const fn is_power_of(n: usize, r: usize) -> bool
+{
+    r.pow(n.ilog(r)) == n
+}
+
 #[cfg(test)]
 mod tests
 {
