@@ -1,6 +1,6 @@
 [package]
 name = "slice_ops"
-version = "0.1.8"
+version = "0.1.9"
 edition = "2021"
 license = "MIT"
 description = "A selection of useful slice operations that run at compile-time"
