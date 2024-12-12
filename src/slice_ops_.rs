@@ -1,8 +1,8 @@
 
-use core::mem::{ManuallyDrop, MaybeUninit};
+use core::cmp::Ordering;
+use core::mem::MaybeUninit;
 
-use core::alloc::Allocator;
-use core::ops::{AddAssign, BitAndAssign, BitOrAssign, BitXorAssign, DivAssign, MulAssign, Neg, RemAssign, ShlAssign, ShrAssign, Sub, SubAssign};
+use core::{cmp::{Ord, PartialOrd}, ops::{AddAssign, BitAndAssign, BitOrAssign, BitXorAssign, DivAssign, FnMut, MulAssign, Neg, Not, RemAssign, ShlAssign, ShrAssign, SubAssign}};
 
 pub use slice_trait::*;
 
@@ -47,33 +47,7 @@ pub const fn rsplit_at_mut<T>(slice: &mut [T], mid: usize) -> (&mut [T], &mut [T
     crate::split_at_mut(slice, slice.len() - mid)
 }
 
-#[inline]
-pub const fn split_array_ref<T, const N: usize>(slice: &[T]) -> (&[T; N], &[T])
-{
-    let (left, right) = crate::split_at(slice, N);
-    unsafe {(&*(left.as_ptr() as *const [T; N]), right)}
-}
-#[inline]
-pub const fn split_array_mut<T, const N: usize>(slice: &mut[T]) -> (&mut [T; N], &mut [T])
-{
-    let (left, right) = crate::split_at_mut(slice, N);
-    unsafe {(&mut *(left.as_mut_ptr() as *mut [T; N]), right)}
-}
-
-#[inline]
-pub const fn rsplit_array_ref<T, const N: usize>(slice: &[T]) -> (&[T], &[T; N])
-{
-    let (left, right) = crate::rsplit_at(slice, N);
-    unsafe {(left, &*(right.as_ptr() as *const [T; N]))}
-}
-#[inline]
-pub const fn rsplit_array_mut<T, const N: usize>(slice: &mut [T]) -> (&mut [T], &mut [T; N])
-{
-    let (left, right) = crate::rsplit_at_mut(slice, N);
-    unsafe {(left, &mut *(right.as_mut_ptr() as *mut [T; N]))}
-}
-
-pub const fn spread_ref<T, const M: usize>(slice: &[T]) -> [&[Padded<T, M>]; M]
+pub const fn spread_chunks<T, const M: usize>(slice: &[T]) -> [&[Padded<T, M>]; M]
 where
     [(); M - 1]:
 {
@@ -93,7 +67,7 @@ where
         spread
     }
 }
-pub const fn spread_mut<T, const M: usize>(slice: &mut [T]) -> [&mut [Padded<T, M>]; M]
+pub const fn spread_chunks_mut<T, const M: usize>(slice: &mut [T]) -> [&mut [Padded<T, M>]; M]
 where
     [(); M - 1]:
 {
@@ -114,6 +88,7 @@ where
     }
 }
 
+#[const_trait]
 pub trait SliceOps<T>: Slice<Item = T>
 {
     fn differentiate(&mut self)
@@ -123,12 +98,52 @@ pub trait SliceOps<T>: Slice<Item = T>
     where
         T: AddAssign<T> + Copy;
 
+    fn find(&self, x: &T) -> Option<usize>
+    where
+        T: PartialEq;
+    fn find_by<F>(&self, f: F) -> Option<usize>
+    where
+        F: FnMut(&T) -> bool;
+    fn find_by_key<B, F>(&self, b: &B, f: F) -> Option<usize>
+    where
+        F: FnMut(&T) -> B,
+        B: PartialEq;
+        
+    fn rfind(&self, x: &T) -> Option<usize>
+    where
+        T: PartialEq;
+    fn rfind_by<F>(&self, f: F) -> Option<usize>
+    where
+        F: FnMut(&T) -> bool;
+    fn rfind_by_key<B, F>(&self, b: &B, f: F) -> Option<usize>
+    where
+        F: FnMut(&T) -> B,
+        B: PartialEq;
+        
+    fn argconverge<F>(&self, f: F) -> Option<usize>
+    where
+        F: FnMut(&T, &T) -> bool;
+
     fn argmax(&self) -> Option<usize>
     where
         T: PartialOrd<T>;
     fn argmin(&self) -> Option<usize>
     where
         T: PartialOrd<T>;
+    fn argmax_by<F>(&self, f: F) -> Option<usize>
+    where
+        F: FnMut(&T, &T) -> Ordering;
+    fn argmin_by<F>(&self, f: F) -> Option<usize>
+    where
+        F: FnMut(&T, &T) -> Ordering;
+    fn argmax_by_key<B, F>(&self, f: F) -> Option<usize>
+    where
+        F: FnMut(&T) -> B,
+        B: PartialOrd;
+    fn argmin_by_key<B, F>(&self, f: F) -> Option<usize>
+    where
+        F: FnMut(&T) -> B,
+        B: PartialOrd;
 
     fn add_assign_all<Rhs>(&mut self, rhs: Rhs)
     where
@@ -174,6 +189,9 @@ pub trait SliceOps<T>: Slice<Item = T>
     fn neg_assign_all(&mut self)
     where
         T: Neg<Output = T>;
+    fn not_assign_all(&mut self)
+    where
+        T: Not<Output = T>;
 
     fn shift_many_left(&mut self, items: &mut [T]);
     
@@ -189,54 +207,6 @@ pub trait SliceOps<T>: Slice<Item = T>
     fn rsplit_at(&self, mid: usize) -> (&[T], &[T]);
     fn rsplit_at_mut(&mut self, mid: usize) -> (&mut [T], &mut [T]);
 
-    /// Does the exact same as the method in the standard library in an identical way,
-    /// but can be done at compile-time.
-    /// 
-    /// Divides one slice into an array and a remainder slice at an index.
-    ///
-    /// The array will contain all indices from `[0, N)` (excluding
-    /// the index `N` itself) and the slice will contain all
-    /// indices from `[N, len)` (excluding the index `len` itself).
-    ///
-    /// # Panics
-    ///
-    /// Panics if `N > len`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// #![feature(split_array)]
-    /// #![feature(const_slice_index)]
-    /// 
-    /// const V: [u8; 6] = [1, 2, 3, 4, 5, 6];
-    ///
-    /// {
-    ///     const SPLIT: (&[u8; 0], &[u8]) = slice_ops::split_array_ref(V.as_slice());
-    ///     assert_eq!(SPLIT.0, &[]);
-    ///     assert_eq!(SPLIT.1, [1, 2, 3, 4, 5, 6]);
-    ///     assert_eq!(SPLIT, V.split_array_ref::<0>());
-    /// }
-    ///
-    /// {
-    ///     const SPLIT: (&[u8; 2], &[u8]) = slice_ops::split_array_ref(V.as_slice());
-    ///     assert_eq!(SPLIT.0, &[1, 2]);
-    ///     assert_eq!(SPLIT.1, [3, 4, 5, 6]);
-    ///     assert_eq!(SPLIT, V.split_array_ref::<2>());
-    /// }
-    ///
-    /// {
-    ///     const SPLIT: (&[u8; 6], &[u8]) = slice_ops::split_array_ref(V.as_slice());
-    ///     assert_eq!(SPLIT.0, &[1, 2, 3, 4, 5, 6]);
-    ///     assert_eq!(SPLIT.1, []);
-    ///     assert_eq!(SPLIT, V.split_array_ref::<6>());
-    /// }
-    /// ```
-    fn split_array_ref2<const N: usize>(&self) -> (&[T; N], &[T]);
-    fn split_array_mut2<const N: usize>(&mut self) -> (&mut [T; N], &mut [T]);
-
-    fn rsplit_array_ref2<const N: usize>(&self) -> (&[T], &[T; N]);
-    fn rsplit_array_mut2<const N: usize>(&mut self) -> (&mut [T], &mut [T; N]);
-    
     /// Spreads elements equally across `M` slices.
     /// Slices will have equal length only if the operand slice's length is divisible by `M`.
     /// 
@@ -248,12 +218,12 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// let arr = [1, 2, 3];
     /// let slice = arr.as_slice();
     /// 
-    /// let [odd, even] = slice.spread_ref();
+    /// let [odd, even] = slice.spread_chunks();
     /// 
     /// assert_eq!(odd, [1, 3]);
     /// assert_eq!(even, [2]);
     /// ```
-    fn spread_ref<const M: usize>(&self) -> [&[Padded<T, M>]; M]
+    fn spread_chunks<const M: usize>(&self) -> [&[Padded<T, M>]; M]
     where
         [(); M - 1]:;
     
@@ -269,14 +239,14 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// let mut arr = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"];
     /// let slice = arr.as_mut_slice();
     /// 
-    /// let [_, _, fizz] = slice.spread_mut();
+    /// let [_, _, fizz] = slice.spread_chunks_mut();
     /// assert_eq!(fizz, ["3", "6", "9", "12", "15"]);
     /// for fizz in fizz.iter_mut()
     /// {
     ///     **fizz = "fizz";
     /// }
     /// 
-    /// let [_, _, _, _, buzz] = slice.spread_mut();
+    /// let [_, _, _, _, buzz] = slice.spread_chunks_mut();
     /// assert_eq!(buzz, ["5", "10", "fizz"]);
     /// for buzz in buzz.iter_mut()
     /// {
@@ -290,7 +260,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// 
     /// assert_eq!(arr, ["1", "2", "fizz", "4", "buzz", "fizz", "7", "8", "fizz", "buzz", "11", "fizz", "13", "14", "fizzbuzz"]);
     /// ```
-    fn spread_mut<const M: usize>(&mut self) -> [&mut [Padded<T, M>]; M]
+    fn spread_chunks_mut<const M: usize>(&mut self) -> [&mut [Padded<T, M>]; M]
     where
         [(); M - 1]:;
         
@@ -343,7 +313,8 @@ pub trait SliceOps<T>: Slice<Item = T>
         F: FnMut(&T) -> bool;
 }
 
-impl<T> const SliceOps<T> for [T]
+/// Waiting for `core::maker::TriviallyDrop` to arrive before making this const again...
+impl<T> /*const*/ SliceOps<T> for [T]
 {
     fn differentiate(&mut self)
     where
@@ -372,27 +343,130 @@ impl<T> const SliceOps<T> for [T]
             i += 1;
         }
     }
+    
+    fn find(&self, x: &T) -> Option<usize>
+    where
+        T: PartialEq
+    {
+        self.find_by(|e| e == x)
+    }
+    fn find_by<F>(&self, mut f: F) -> Option<usize>
+    where
+        F: FnMut(&T) -> bool
+    {
+        let l = self.len();
+        let mut i = 0;
+        
+        while i < l
+        {
+            if f(&self[i])
+            {
+                return Some(i)
+            }
+            i += 1
+        }
+
+        None
+    }
+    fn find_by_key<B, F>(&self, b: &B, mut f: F) -> Option<usize>
+    where
+        F: FnMut(&T) -> B,
+        B: PartialEq
+    {
+        self.find_by(|e| f(e) == *b)
+    }
+        
+    fn rfind(&self, x: &T) -> Option<usize>
+    where
+        T: PartialEq
+    {
+        self.rfind_by(|e| e == x)
+    }
+    fn rfind_by<F>(&self, mut f: F) -> Option<usize>
+    where
+        F: FnMut(&T) -> bool
+    {
+        let l = self.len();
+        let mut i = l;
+        
+        while i > 0
+        {
+            i -= 1;
+            if f(&self[i])
+            {
+                return Some(i)
+            }
+        }
+
+        None
+    }
+    fn rfind_by_key<B, F>(&self, b: &B, mut f: F) -> Option<usize>
+    where
+        F: FnMut(&T) -> B,
+        B: PartialEq
+    {
+        self.rfind_by(|e| f(e) == *b)
+    }
+    
+    fn argconverge<F>(&self, mut f: F) -> Option<usize>
+    where
+        F: FnMut(&T, &T) -> bool
+    {
+        let l = self.len();
+        if l == 0
+        {
+            return None;
+        }
+        let mut i = 1;
+        let mut j = 0;
+        while i < l
+        {
+            if f(&self[i], &self[j])
+            {
+                j = i;
+            }
+            i += 1;
+        }
+        Some(j)
+    }
 
     fn argmax(&self) -> Option<usize>
     where
-        T: PartialOrd<T>
+        T: PartialOrd
     {
-        match self.iter().enumerate().reduce(|a, b| if a.1 >= b.1 {a} else {b})
-        {
-            Some((i, _)) => Some(i),
-            None => None
-        }
+        self.argconverge(PartialOrd::gt)
     }
-        
     fn argmin(&self) -> Option<usize>
     where
-        T: PartialOrd<T>
+        T: PartialOrd
     {
-        match self.iter().enumerate().reduce(|a, b| if a.1 <= b.1 {a} else {b})
-        {
-            Some((i, _)) => Some(i),
-            None => None
-        }
+        self.argconverge(PartialOrd::lt)
+    }
+    fn argmax_by<F>(&self, mut f: F) -> Option<usize>
+    where
+        F: FnMut(&T, &T) -> Ordering
+    {
+        self.argconverge(|a, b| matches!(f(a, b), Ordering::Greater))
+    }
+    fn argmin_by<F>(&self, mut f: F) -> Option<usize>
+    where
+        F: FnMut(&T, &T) -> Ordering
+    {
+        self.argconverge(|a, b| matches!(f(a, b), Ordering::Less))
+    }
+    fn argmax_by_key<B, F>(&self, mut f: F) -> Option<usize>
+    where
+        F: FnMut(&T) -> B,
+        B: PartialOrd
+    {
+        self.argconverge(|a, b| f(a).gt(&f(b)))
+    }
+    fn argmin_by_key<B, F>(&self, mut f: F) -> Option<usize>
+    where
+        F: FnMut(&T) -> B,
+        B: PartialOrd
+    {
+        self.argconverge(|a, b| f(a).lt(&f(b)))
     }
 
     fn add_assign_all<Rhs>(&mut self, rhs: Rhs)
@@ -400,9 +474,12 @@ impl<T> const SliceOps<T> for [T]
         T: AddAssign<Rhs>,
         Rhs: Copy
     {
-        for x in self.iter_mut()
+        let l = self.len();
+        let mut i = 0;
+        while i < l
         {
-            *x += rhs;
+            self[i] += rhs;
+            i += 1;
         }
     }
     fn sub_assign_all<Rhs>(&mut self, rhs: Rhs)
@@ -410,9 +487,12 @@ impl<T> const SliceOps<T> for [T]
         T: SubAssign<Rhs>,
         Rhs: Copy
     {
-        for x in self.iter_mut()
+        let l = self.len();
+        let mut i = 0;
+        while i < l
         {
-            *x -= rhs;
+            self[i] -= rhs;
+            i += 1;
         }
     }
     fn mul_assign_all<Rhs>(&mut self, rhs: Rhs)
@@ -420,9 +500,12 @@ impl<T> const SliceOps<T> for [T]
         T: MulAssign<Rhs>,
         Rhs: Copy
     {
-        for x in self.iter_mut()
+        let l = self.len();
+        let mut i = 0;
+        while i < l
         {
-            *x *= rhs;
+            self[i] *= rhs;
+            i += 1;
         }
     }
     fn div_assign_all<Rhs>(&mut self, rhs: Rhs)
@@ -430,9 +513,12 @@ impl<T> const SliceOps<T> for [T]
         T: DivAssign<Rhs>,
         Rhs: Copy
     {
-        for x in self.iter_mut()
+        let l = self.len();
+        let mut i = 0;
+        while i < l
         {
-            *x /= rhs;
+            self[i] /= rhs;
+            i += 1;
         }
     }
     fn rem_assign_all<Rhs>(&mut self, rhs: Rhs)
@@ -440,9 +526,12 @@ impl<T> const SliceOps<T> for [T]
         T: RemAssign<Rhs>,
         Rhs: Copy
     {
-        for x in self.iter_mut()
+        let l = self.len();
+        let mut i = 0;
+        while i < l
         {
-            *x %= rhs;
+            self[i] %= rhs;
+            i += 1;
         }
     }
     fn shl_assign_all<Rhs>(&mut self, rhs: Rhs)
@@ -450,9 +539,12 @@ impl<T> const SliceOps<T> for [T]
         T: ShlAssign<Rhs>,
         Rhs: Copy
     {
-        for x in self.iter_mut()
+        let l = self.len();
+        let mut i = 0;
+        while i < l
         {
-            *x <<= rhs;
+            self[i] <<= rhs;
+            i += 1;
         }
     }
     fn shr_assign_all<Rhs>(&mut self, rhs: Rhs)
@@ -460,9 +552,12 @@ impl<T> const SliceOps<T> for [T]
         T: ShrAssign<Rhs>,
         Rhs: Copy
     {
-        for x in self.iter_mut()
+        let l = self.len();
+        let mut i = 0;
+        while i < l
         {
-            *x >>= rhs;
+            self[i] >>= rhs;
+            i += 1;
         }
     }
     fn bitor_assign_all<Rhs>(&mut self, rhs: Rhs)
@@ -470,9 +565,12 @@ impl<T> const SliceOps<T> for [T]
         T: BitOrAssign<Rhs>,
         Rhs: Copy
     {
-        for x in self.iter_mut()
+        let l = self.len();
+        let mut i = 0;
+        while i < l
         {
-            *x |= rhs;
+            self[i] |= rhs;
+            i += 1;
         }
     }
     fn bitand_assign_all<Rhs>(&mut self, rhs: Rhs)
@@ -480,9 +578,12 @@ impl<T> const SliceOps<T> for [T]
         T: BitAndAssign<Rhs>,
         Rhs: Copy
     {
-        for x in self.iter_mut()
+        let l = self.len();
+        let mut i = 0;
+        while i < l
         {
-            *x &= rhs;
+            self[i] &= rhs;
+            i += 1;
         }
     }
     fn bitxor_assign_all<Rhs>(&mut self, rhs: Rhs)
@@ -490,9 +591,12 @@ impl<T> const SliceOps<T> for [T]
         T: BitXorAssign<Rhs>,
         Rhs: Copy
     {
-        for x in self.iter_mut()
+        let l = self.len();
+        let mut i = 0;
+        while i < l
         {
-            *x ^= rhs;
+            self[i] ^= rhs;
+            i += 1;
         }
     }
     
@@ -510,15 +614,30 @@ impl<T> const SliceOps<T> for [T]
             i += 1;
         }
     }
+    fn not_assign_all(&mut self)
+    where
+        T: Not<Output = T>
+    {
+        let mut i = 0;
+        while i < self.len()
+        {
+            unsafe {
+                let ptr = self.as_mut_ptr().add(i);
+                ptr.write(!ptr.read());
+            }
+            i += 1;
+        }
+    }
 
     fn shift_many_left(&mut self, items: &mut [T])
     {
         let len = self.len();
         let m = items.len();
+        let q = m.min(len);
         unsafe {
             items.rotate_left(m.saturating_sub(len));
-            core::ptr::swap_nonoverlapping(self.as_mut_ptr(), items.as_mut_ptr(), m.min(len));
-            self.rotate_left(m.min(len));
+            core::ptr::swap_nonoverlapping(self.as_mut_ptr(), items.as_mut_ptr(), q);
+            self.rotate_left(q);
         }
     }
     
@@ -526,39 +645,52 @@ impl<T> const SliceOps<T> for [T]
     {
         let len = self.len();
         let m = items.len();
+        let q = m.min(len);
         unsafe {
-            self.rotate_right(m.min(len));
-            core::ptr::swap_nonoverlapping(self.as_mut_ptr(), items.as_mut_ptr(), m.min(len));
+            self.rotate_right(q);
+            core::ptr::swap_nonoverlapping(self.as_mut_ptr(), items.as_mut_ptr(), q);
             items.rotate_right(m.saturating_sub(len));
         }
     }
     
     fn shift_left(&mut self, item: &mut T)
     {
-        if self.len() > 0
+        let l = self.len();
+        if l <= 1
         {
-            unsafe {
-                core::ptr::swap_nonoverlapping(self.as_mut_ptr(), item as *mut T, 1);
-            }
-            self.rotate_left(1);
+            return;
+        }
+        let p = self.as_mut_ptr_range();
+        unsafe {
+            core::ptr::swap_nonoverlapping(p.start, item as *mut T, 1);
+
+            let x = p.start.read();
+            core::ptr::copy(p.start.add(1), p.start, l - 1);
+            p.end.sub(1).write(x);
         }
     }
 
     fn shift_right(&mut self, item: &mut T)
     {
-        let len = self.len();
-        if len > 0
+        let l = self.len();
+        if l <= 1
         {
-            self.rotate_right(1);
-            unsafe {
-                core::ptr::swap_nonoverlapping(self.as_mut_ptr(), item as *mut T, 1);
-            }
+            return;
+        }
+        let p = self.as_mut_ptr_range();
+        unsafe {
+            let x = p.end.sub(1).read();
+            core::ptr::copy(p.start, p.start.add(1), l - 1);
+            p.start.write(x);
+
+            core::ptr::swap_nonoverlapping(p.start, item as *mut T, 1);
         }
     }
 
     fn split_len(&self, mid: usize) -> (usize, usize)
     {
-        crate::split_len(self.len(), mid)
+        assert!(mid <= self.len());
+        (mid, self.len() - mid)
     }
     fn rsplit_len(&self, mid: usize) -> (usize, usize)
     {
@@ -573,36 +705,18 @@ impl<T> const SliceOps<T> for [T]
     {
         crate::rsplit_at_mut(self, mid)
     }
-
-    fn split_array_ref2<const N: usize>(&self) -> (&[T; N], &[T])
-    {
-        crate::split_array_ref(self)
-    }
-    fn split_array_mut2<const N: usize>(&mut self) -> (&mut [T; N], &mut [T])
-    {
-        crate::split_array_mut(self)
-    }
-
-    fn rsplit_array_ref2<const N: usize>(&self) -> (&[T], &[T; N])
-    {
-        crate::rsplit_array_ref(self)
-    }
-    fn rsplit_array_mut2<const N: usize>(&mut self) -> (&mut [T], &mut [T; N])
-    {
-        crate::rsplit_array_mut(self)
-    }
     
-    fn spread_ref<const M: usize>(&self) -> [&[Padded<T, M>]; M]
+    fn spread_chunks<const M: usize>(&self) -> [&[Padded<T, M>]; M]
     where
         [(); M - 1]:
     {
-        crate::spread_ref(self)
+        crate::spread_chunks(self)
     }
-    fn spread_mut<const M: usize>(&mut self) -> [&mut [Padded<T, M>]; M]
+    fn spread_chunks_mut<const M: usize>(&mut self) -> [&mut [Padded<T, M>]; M]
     where
         [(); M - 1]:
     {
-        crate::spread_mut(self)
+        crate::spread_chunks_mut(self)
     }
     
     fn bit_rev_permutation(&mut self)
@@ -678,10 +792,14 @@ impl<T> const SliceOps<T> for [T]
         F: FnMut(&T) -> bool
     {
         let mut slice = self;
+        let mut range = slice.as_ptr_range();
 
-        while slice.first().map(&mut trim).unwrap_or(false)
+        while matches!(slice.first().map(&mut trim), Some(true))
         {
-            slice = slice.get(1..).unwrap_or_default()
+            unsafe {
+                range.start = range.start.add(1);
+                slice = core::slice::from_ptr_range(range.clone())
+            }
         }
 
         slice
@@ -691,10 +809,14 @@ impl<T> const SliceOps<T> for [T]
         F: FnMut(&T) -> bool
     {
         let mut slice = self;
+        let mut range = slice.as_ptr_range();
 
-        while slice.last().map(&mut trim).unwrap_or(false)
+        while matches!(slice.last().map(&mut trim), Some(true))
         {
-            slice = slice.get(..slice.len() - 1).unwrap_or_default()
+            unsafe {
+                range.end = range.end.sub(1);
+                slice = core::slice::from_ptr_range(range.clone())
+            }
         }
 
         slice
@@ -710,10 +832,14 @@ impl<T> const SliceOps<T> for [T]
         F: FnMut(&T) -> bool
     {
         let mut slice = self;
+        let mut range = slice.as_mut_ptr_range();
 
-        while slice.first().map(&mut trim).unwrap_or(false)
+        while matches!(slice.first().map(&mut trim), Some(true))
         {
-            slice = slice.get_mut(1..).unwrap_or_default()
+            unsafe {
+                range.start = range.start.add(1);
+                slice = core::slice::from_mut_ptr_range(range.clone())
+            }
         }
 
         slice
@@ -723,10 +849,14 @@ impl<T> const SliceOps<T> for [T]
         F: FnMut(&T) -> bool
     {
         let mut slice = self;
+        let mut range = slice.as_mut_ptr_range();
 
-        while slice.last().map(&mut trim).unwrap_or(false)
+        while matches!(slice.last().map(&mut trim), Some(true))
         {
-            slice = slice.get_mut(..slice.len() - 1).unwrap_or_default()
+            unsafe {
+                range.end = range.end.sub(1);
+                slice = core::slice::from_mut_ptr_range(range.clone())
+            }
         }
 
         slice

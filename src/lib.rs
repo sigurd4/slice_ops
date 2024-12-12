@@ -7,9 +7,14 @@
 #![feature(const_refs_to_cell)]
 #![feature(const_slice_from_raw_parts_mut)]
 #![feature(allocator_api)]
-#![cfg_attr(feature = "std", feature(new_uninit))]
-
+#![feature(core_intrinsics)]
+#![feature(const_eval_select)]
+#![feature(const_swap_nonoverlapping)]
+#![feature(const_slice_from_ptr_range)]
+#![feature(const_destruct)]
+#![feature(unboxed_closures)]
 #![feature(generic_const_exprs)]
+#![cfg_attr(feature = "std", feature(new_uninit))]
 
 moddef::moddef!(
     flat(pub) mod {
@@ -45,6 +50,8 @@ mod tests
 
         let ar: &[u8] = &a;
 
-        let _split = ar.rsplit_array_ref2::<2>();
+        let i = ar.argmin().unwrap();
+
+        println!("{}", i);
     }
 }

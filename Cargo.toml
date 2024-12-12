@@ -16,3 +16,4 @@ std = []
 [dependencies]
 moddef = "0.2.2"
 slice_trait = "0.1.0"
+#sss_core = {path = "../sss_core"}
