@@ -1,5 +1,6 @@
 
 use core::cmp::Ordering;
+use core::marker::Destruct;
 use core::mem::MaybeUninit;
 
 use core::{cmp::{Ord, PartialOrd}, ops::{AddAssign, BitAndAssign, BitOrAssign, BitXorAssign, DivAssign, FnMut, MulAssign, Neg, Not, RemAssign, ShlAssign, ShrAssign, SubAssign}};
@@ -103,10 +104,10 @@ pub trait SliceOps<T>: Slice<Item = T>
         T: PartialEq;
     fn find_by<F>(&self, f: F) -> Option<usize>
     where
-        F: FnMut(&T) -> bool;
+        F: FnMut(&T) -> bool + ~const Destruct;
     fn find_by_key<B, F>(&self, b: &B, f: F) -> Option<usize>
     where
-        F: FnMut(&T) -> B,
+        F: FnMut(&T) -> B + ~const Destruct,
         B: PartialEq;
         
     fn rfind(&self, x: &T) -> Option<usize>
@@ -114,15 +115,15 @@ pub trait SliceOps<T>: Slice<Item = T>
         T: PartialEq;
     fn rfind_by<F>(&self, f: F) -> Option<usize>
     where
-        F: FnMut(&T) -> bool;
+        F: FnMut(&T) -> bool + ~const Destruct;
     fn rfind_by_key<B, F>(&self, b: &B, f: F) -> Option<usize>
     where
-        F: FnMut(&T) -> B,
+        F: FnMut(&T) -> B + ~const Destruct,
         B: PartialEq;
         
     fn argconverge<F>(&self, f: F) -> Option<usize>
     where
-        F: FnMut(&T, &T) -> bool;
+        F: FnMut(&T, &T) -> bool + ~const Destruct;
 
     fn argmax(&self) -> Option<usize>
     where
@@ -132,17 +133,17 @@ pub trait SliceOps<T>: Slice<Item = T>
         T: PartialOrd<T>;
     fn argmax_by<F>(&self, f: F) -> Option<usize>
     where
-        F: FnMut(&T, &T) -> Ordering;
+        F: FnMut(&T, &T) -> Ordering + ~const Destruct;
     fn argmin_by<F>(&self, f: F) -> Option<usize>
     where
-        F: FnMut(&T, &T) -> Ordering;
+        F: FnMut(&T, &T) -> Ordering + ~const Destruct;
     fn argmax_by_key<B, F>(&self, f: F) -> Option<usize>
     where
-        F: FnMut(&T) -> B,
+        F: FnMut(&T) -> B + ~const Destruct,
         B: PartialOrd;
     fn argmin_by_key<B, F>(&self, f: F) -> Option<usize>
     where
-        F: FnMut(&T) -> B,
+        F: FnMut(&T) -> B + ~const Destruct,
         B: PartialOrd;
 
     fn add_assign_all<Rhs>(&mut self, rhs: Rhs)
@@ -295,22 +296,22 @@ pub trait SliceOps<T>: Slice<Item = T>
 
     fn trim<F>(&self, trim: F) -> &[T]
     where
-        F: FnMut(&T) -> bool;
+        F: FnMut(&T) -> bool + ~const Destruct;
     fn trim_front<F>(&self, trim: F) -> &[T]
     where
-        F: FnMut(&T) -> bool;
+        F: FnMut(&T) -> bool + ~const Destruct;
     fn trim_back<F>(&self, trim: F) -> &[T]
     where
-        F: FnMut(&T) -> bool;
+        F: FnMut(&T) -> bool + ~const Destruct;
     fn trim_mut<F>(&mut self, trim: F) -> &mut [T]
     where
-        F: FnMut(&T) -> bool;
+        F: FnMut(&T) -> bool + ~const Destruct;
     fn trim_front_mut<F>(&mut self, trim: F) -> &mut [T]
     where
-        F: FnMut(&T) -> bool;
+        F: FnMut(&T) -> bool + ~const Destruct;
     fn trim_back_mut<F>(&mut self, trim: F) -> &mut [T]
     where
-        F: FnMut(&T) -> bool;
+        F: FnMut(&T) -> bool + ~const Destruct;
 }
 
 /// Waiting for `core::maker::TriviallyDrop` to arrive before making this const again...
