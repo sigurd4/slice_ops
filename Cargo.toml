@@ -10,10 +10,13 @@ keywords = ["slice", "const", "util", "ops"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = ["std"]
-std = []
+default = ["alloc"]
+alloc = []
 
 [dependencies]
-moddef = "0.2.2"
-slice_trait = "0.1.1"
-#sss_core = {path = "../sss_core"}
+moddef = "0.2.6"
+slice_trait = "0.1.3"
+#option_trait = "0.1.16"
+
+[dev-dependencies]
+tokio-test = "0.4.4"
