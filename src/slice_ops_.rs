@@ -12,6 +12,9 @@ use crate::{is_power_of, Padded};
 #[cfg(feature = "alloc")]
 use crate::{Actions, ErrorRace};
 
+#[cfg(feature = "alloc")]
+use core::future::Future;
+
 #[deprecated(note = "This will be removed once it can be implemented as a method")]
 #[inline]
 pub const fn split_len(len: usize, mid: usize) -> (usize, usize)
@@ -265,6 +268,8 @@ pub trait SliceOps<T>: Slice<Item = T>
         
     /// Performs an argument reduction, finding the final righthand operand for which the comparison yields true.
     /// 
+    /// # Examples
+    /// 
     /// ```rust
     /// use slice_ops::*;
     /// 
@@ -292,6 +297,33 @@ pub trait SliceOps<T>: Slice<Item = T>
         F: FnMut(&'a T, &'a T) -> bool /*+ ~const Destruct*/,
         T: 'a;
     
+    /// Performs an argument reduction on the hashed values, finding the final righthand operand for which the comparison yields true.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// fn hasher(str: &&str) -> i32
+    /// {
+    ///     i32::from_str_radix(str, 10).unwrap()
+    /// }
+    /// 
+    /// fn my_argmax(slice: &[&str]) -> Option<usize>
+    /// {
+    ///     slice.argreduce_key(PartialOrd::gt, hasher)
+    /// }
+    /// 
+    /// fn my_argmin(slice: &[&str]) -> Option<usize>
+    /// {
+    ///     slice.argreduce_key(PartialOrd::lt, hasher)
+    /// }
+    /// 
+    /// let x = ["1", "5", "5", "6", "2", "-1", "0", "-4", "-1", "6"];
+    /// 
+    /// assert_eq!(my_argmax(&x), x.argmax_by_key(hasher));
+    /// assert_eq!(my_argmin(&x), x.argmin_by_key(hasher));
+    /// ```
     fn argreduce_key<'a, B, FR, FB>(&'a self, reduction: FR, hasher: FB) -> Option<usize>
     where
         FR: FnMut(&B, &B) -> bool /*+ ~const Destruct*/,
@@ -427,19 +459,93 @@ pub trait SliceOps<T>: Slice<Item = T>
         B: PartialOrd,
         T: 'a;
         
+    /// Visits each element once, from left to right.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let x = [1, 2, 3, 4, 5, 6, 7, 8];
+    /// 
+    /// let mut i = 0;
+    /// 
+    /// x.visit(|&e| {
+    ///     i += 1;
+    ///     assert_eq!(i, e)
+    /// });
+    /// ```
     fn visit<'a, F>(&'a self, visitor: F)
     where
         F: FnMut(&'a T) /*+ ~const Destruct*/,
         T: 'a;
+    /// Mutably visits each element once, from left to right.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let mut x = [0; 8];
+    /// 
+    /// let mut i = 0;
+    /// 
+    /// x.visit_mut(|e| {
+    ///     i += 1;
+    ///     *e = i;
+    /// });
+    /// 
+    /// assert_eq!(x, [1, 2, 3, 4, 5, 6, 7, 8]);
+    /// ```
     fn visit_mut<'a, F>(&'a mut self, visitor: F)
     where
         F: FnMut(&'a mut T) /*+ ~const Destruct*/,
         T: 'a;
+    /// Visits each element once, from left to right, or short-circuits if visitor returns error.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let x = [1, 2, 3, 4, 5, 6, 7, 8];
+    /// 
+    /// let mut i = 0;
+    /// 
+    /// let result = x.try_visit(|&e| {
+    ///     i += 1;
+    ///     if i > 4
+    ///     {
+    ///         return Err(i)
+    ///     }
+    ///     assert_eq!(i, e);
+    ///     Ok(())
+    /// });
+    /// 
+    /// assert_eq!(result, Err(5));
+    /// ```
     fn try_visit<'a, E, F>(&'a self, visitor: F) -> Result<(), E>
     where
         F: FnMut(&'a T) -> Result<(), E> /*+ ~const Destruct*/,
         T: 'a;
     fn try_visit_mut<'a, E, F>(&'a mut self, visitor: F) -> Result<(), E>
+    where
+        F: FnMut(&'a mut T) -> Result<(), E> /*+ ~const Destruct*/,
+        T: 'a;
+        
+    fn rvisit<'a, F>(&'a self, visitor: F)
+    where
+        F: FnMut(&'a T) /*+ ~const Destruct*/,
+        T: 'a;
+    fn rvisit_mut<'a, F>(&'a mut self, visitor: F)
+    where
+        F: FnMut(&'a mut T) /*+ ~const Destruct*/,
+        T: 'a;
+    fn try_rvisit<'a, E, F>(&'a self, visitor: F) -> Result<(), E>
+    where
+        F: FnMut(&'a T) -> Result<(), E> /*+ ~const Destruct*/,
+        T: 'a;
+    fn try_rvisit_mut<'a, E, F>(&'a mut self, visitor: F) -> Result<(), E>
     where
         F: FnMut(&'a mut T) -> Result<(), E> /*+ ~const Destruct*/,
         T: 'a;
@@ -465,109 +571,449 @@ pub trait SliceOps<T>: Slice<Item = T>
         F: AsyncFn(&'a mut T) -> Result<(), E> /*+ ~const Destruct*/,
         T: 'a;
 
+    /// Adds `rhs` to each element in the slice.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let mut x = [1, 2, 3, 4, 5, 6, 7, 8];
+    /// 
+    /// x.add_assign_all(2);
+    ///    
+    /// assert_eq!(x, [3, 4, 5, 6, 7, 8, 9, 10]);
+    /// ```
     fn add_assign_all<Rhs>(&mut self, rhs: Rhs)
     where
         T: AddAssign<Rhs>,
         Rhs: Copy;
+    /// Subtracts each element in the slice by `rhs`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let mut x = [1, 2, 3, 4, 5, 6, 7, 8];
+    /// 
+    /// x.sub_assign_all(2);
+    ///    
+    /// assert_eq!(x, [-1, 0, 1, 2, 3, 4, 5, 6]);
+    /// ```
     fn sub_assign_all<Rhs>(&mut self, rhs: Rhs)
     where
         T: SubAssign<Rhs>,
         Rhs: Copy;
+    /// Multiplies `rhs` to each element in the slice.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let mut x = [1, 2, 3, 4, 5, 6, 7, 8];
+    /// 
+    /// x.mul_assign_all(2);
+    ///    
+    /// assert_eq!(x, [2, 4, 6, 8, 10, 12, 14, 16]);
+    /// ```
     fn mul_assign_all<Rhs>(&mut self, rhs: Rhs)
     where
         T: MulAssign<Rhs>,
         Rhs: Copy;
+    /// Divides each element in the slice by `rhs`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let mut x = [1, 2, 3, 4, 5, 6, 7, 8];
+    /// 
+    /// x.div_assign_all(2);
+    ///    
+    /// assert_eq!(x, [0, 1, 1, 2, 2, 3, 3, 4]);
+    /// ```
     fn div_assign_all<Rhs>(&mut self, rhs: Rhs)
     where
         T: DivAssign<Rhs>,
         Rhs: Copy;
+    /// Replaces each value in the slice with its remainder when divided by `rhs`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let mut x = [1, 2, 3, 4, 5, 6, 7, 8];
+    /// 
+    /// x.rem_assign_all(2);
+    ///    
+    /// assert_eq!(x, [1, 0, 1, 0, 1, 0, 1, 0]);
+    /// ```
     fn rem_assign_all<Rhs>(&mut self, rhs: Rhs)
     where
         T: RemAssign<Rhs>,
         Rhs: Copy;
+    /// Shifts each element to the left by `rhs`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let mut x = [0b1, 0b10, 0b11, 0b100, 0b101, 0b110, 0b111, 0b1000];
+    /// 
+    /// x.shl_assign_all(2);
+    ///    
+    /// assert_eq!(x, [0b100, 0b1000, 0b1100, 0b10000, 0b10100, 0b11000, 0b11100, 0b100000]);
+    /// ```
     fn shl_assign_all<Rhs>(&mut self, rhs: Rhs)
     where
         T: ShlAssign<Rhs>,
         Rhs: Copy;
+    /// Shifts each element to the right by `rhs`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let mut x = [0b1, 0b10, 0b11, 0b100, 0b101, 0b110, 0b111, 0b1000];
+    /// 
+    /// x.shr_assign_all(2);
+    ///    
+    /// assert_eq!(x, [0b0, 0b0, 0b0, 0b1, 0b1, 0b1, 0b1, 0b10]);
+    /// ```
     fn shr_assign_all<Rhs>(&mut self, rhs: Rhs)
     where
         T: ShrAssign<Rhs>,
         Rhs: Copy;
+    /// Performs a bitwise OR on each element using `rhs`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let mut x = [0b1, 0b10, 0b11, 0b100, 0b101, 0b110, 0b111, 0b1000];
+    /// 
+    /// x.bitor_assign_all(0b10);
+    ///    
+    /// assert_eq!(x, [0b11, 0b10, 0b11, 0b110, 0b111, 0b110, 0b111, 0b1010]);
+    /// ```
     fn bitor_assign_all<Rhs>(&mut self, rhs: Rhs)
     where
         T: BitOrAssign<Rhs>,
         Rhs: Copy;
+    /// Performs a bitwise AND on each element using `rhs`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let mut x = [0b1, 0b10, 0b11, 0b100, 0b101, 0b110, 0b111, 0b1000];
+    /// 
+    /// x.bitand_assign_all(0b10);
+    ///    
+    /// assert_eq!(x, [0b0, 0b10, 0b10, 0b0, 0b0, 0b10, 0b10, 0b0]);
+    /// ```
     fn bitand_assign_all<Rhs>(&mut self, rhs: Rhs)
     where
         T: BitAndAssign<Rhs>,
         Rhs: Copy;
+    /// Performs a bitwise XOR on each element using `rhs`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let mut x = [0b1, 0b10, 0b11, 0b100, 0b101, 0b110, 0b111, 0b1000];
+    /// 
+    /// x.bitxor_assign_all(0b10);
+    ///    
+    /// assert_eq!(x, [0b11, 0b0, 0b1, 0b110, 0b111, 0b100, 0b101, 0b1010]);
+    /// ```
     fn bitxor_assign_all<Rhs>(&mut self, rhs: Rhs)
     where
         T: BitXorAssign<Rhs>,
         Rhs: Copy;
         
+    /// Negates each element in the slice.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let mut x = [1, 2, 3, 4, 5, 6, 7, 8];
+    /// 
+    /// x.neg_assign_all();
+    ///    
+    /// assert_eq!(x, [-1, -2, -3, -4, -5, -6, -7, -8]);
+    /// ```
     fn neg_assign_all(&mut self)
     where
         T: Neg<Output = T>;
+    /// Performs a logical NOT or bitwise NOT on each element in the slice.
+    /// 
+    /// Booleans will be treated with a logical NOT, while integers will be treated with a bitwise NOT.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let mut x = [true, false, true, false, true, false, true, true];
+    /// 
+    /// x.not_assign_all();
+    ///    
+    /// assert_eq!(x, [false, true, false, true, false, true, false, false]);
+    /// ```
     fn not_assign_all(&mut self)
     where
         T: Not<Output = T>;
     
+    /// Asyncronously adds `rhs` to each element in the slice.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// # tokio_test::block_on(async {
+    /// let mut x = [1, 2, 3, 4, 5, 6, 7, 8];
+    /// 
+    /// x.add_assign_all_async(2).await;
+    ///    
+    /// assert_eq!(x, [3, 4, 5, 6, 7, 8, 9, 10]);
+    /// # });
+    /// ```
     #[cfg(feature = "alloc")]
     async fn add_assign_all_async<Rhs>(&mut self, rhs: Rhs)
     where
         T: AddAssign<Rhs>,
         Rhs: Copy;
+    /// Asyncronously subtracts each element in the slice by `rhs`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// # tokio_test::block_on(async {
+    /// let mut x = [1, 2, 3, 4, 5, 6, 7, 8];
+    /// 
+    /// x.sub_assign_all_async(2).await;
+    ///    
+    /// assert_eq!(x, [-1, 0, 1, 2, 3, 4, 5, 6]);
+    /// # });
+    /// ```
     #[cfg(feature = "alloc")]
     async fn sub_assign_all_async<Rhs>(&mut self, rhs: Rhs)
     where
         T: SubAssign<Rhs>,
         Rhs: Copy;
+    /// Asyncronously multiplies `rhs` to each element in the slice.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// # tokio_test::block_on(async {
+    /// let mut x = [1, 2, 3, 4, 5, 6, 7, 8];
+    /// 
+    /// x.mul_assign_all_async(2).await;
+    ///    
+    /// assert_eq!(x, [2, 4, 6, 8, 10, 12, 14, 16]);
+    /// # });
+    /// ```
     #[cfg(feature = "alloc")]
     async fn mul_assign_all_async<Rhs>(&mut self, rhs: Rhs)
     where
         T: MulAssign<Rhs>,
         Rhs: Copy;
+    /// Asyncronously divides each element in the slice by `rhs`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// # tokio_test::block_on(async {
+    /// let mut x = [1, 2, 3, 4, 5, 6, 7, 8];
+    /// 
+    /// x.div_assign_all_async(2).await;
+    ///    
+    /// assert_eq!(x, [0, 1, 1, 2, 2, 3, 3, 4]);
+    /// # });
+    /// ```
     #[cfg(feature = "alloc")]
     async fn div_assign_all_async<Rhs>(&mut self, rhs: Rhs)
     where
         T: DivAssign<Rhs>,
         Rhs: Copy;
+    /// Asyncronously replaces each value in the slice with its remainder when divided by `rhs`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// # tokio_test::block_on(async {
+    /// let mut x = [1, 2, 3, 4, 5, 6, 7, 8];
+    /// 
+    /// x.rem_assign_all_async(2).await;
+    ///    
+    /// assert_eq!(x, [1, 0, 1, 0, 1, 0, 1, 0]);
+    /// # });
+    /// ```
     #[cfg(feature = "alloc")]
     async fn rem_assign_all_async<Rhs>(&mut self, rhs: Rhs)
     where
         T: RemAssign<Rhs>,
         Rhs: Copy;
+    /// Asyncronously shifts each element to the left by `rhs`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// # tokio_test::block_on(async {
+    /// let mut x = [0b1, 0b10, 0b11, 0b100, 0b101, 0b110, 0b111, 0b1000];
+    /// 
+    /// x.shl_assign_all_async(2).await;
+    ///    
+    /// assert_eq!(x, [0b100, 0b1000, 0b1100, 0b10000, 0b10100, 0b11000, 0b11100, 0b100000]);
+    /// # });
+    /// ```
     #[cfg(feature = "alloc")]
     async fn shl_assign_all_async<Rhs>(&mut self, rhs: Rhs)
     where
         T: ShlAssign<Rhs>,
         Rhs: Copy;
+    /// Asyncronously shifts each element to the right by `rhs`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// # tokio_test::block_on(async {
+    /// let mut x = [0b1, 0b10, 0b11, 0b100, 0b101, 0b110, 0b111, 0b1000];
+    /// 
+    /// x.shr_assign_all_async(2).await;
+    ///    
+    /// assert_eq!(x, [0b0, 0b0, 0b0, 0b1, 0b1, 0b1, 0b1, 0b10]);
+    /// # });
+    /// ```
     #[cfg(feature = "alloc")]
     async fn shr_assign_all_async<Rhs>(&mut self, rhs: Rhs)
     where
         T: ShrAssign<Rhs>,
         Rhs: Copy;
+    /// Asyncronously performs a bitwise OR on each element using `rhs`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// # tokio_test::block_on(async {
+    /// let mut x = [0b1, 0b10, 0b11, 0b100, 0b101, 0b110, 0b111, 0b1000];
+    /// 
+    /// x.bitor_assign_all_async(0b10).await;
+    ///    
+    /// assert_eq!(x, [0b11, 0b10, 0b11, 0b110, 0b111, 0b110, 0b111, 0b1010]);
+    /// # });
+    /// ```
     #[cfg(feature = "alloc")]
     async fn bitor_assign_all_async<Rhs>(&mut self, rhs: Rhs)
     where
         T: BitOrAssign<Rhs>,
         Rhs: Copy;
+    /// Asyncronously performs a bitwise AND on each element using `rhs`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// # tokio_test::block_on(async {
+    /// let mut x = [0b1, 0b10, 0b11, 0b100, 0b101, 0b110, 0b111, 0b1000];
+    /// 
+    /// x.bitand_assign_all_async(0b10).await;
+    ///    
+    /// assert_eq!(x, [0b0, 0b10, 0b10, 0b0, 0b0, 0b10, 0b10, 0b0]);
+    /// # });
+    /// ```
     #[cfg(feature = "alloc")]
     async fn bitand_assign_all_async<Rhs>(&mut self, rhs: Rhs)
     where
         T: BitAndAssign<Rhs>,
         Rhs: Copy;
+    /// Asyncronously performs a bitwise XOR on each element using `rhs`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// # tokio_test::block_on(async {
+    /// let mut x = [0b1, 0b10, 0b11, 0b100, 0b101, 0b110, 0b111, 0b1000];
+    /// 
+    /// x.bitxor_assign_all_async(0b10).await;
+    ///    
+    /// assert_eq!(x, [0b11, 0b0, 0b1, 0b110, 0b111, 0b100, 0b101, 0b1010]);
+    /// # });
+    /// ```
     #[cfg(feature = "alloc")]
     async fn bitxor_assign_all_async<Rhs>(&mut self, rhs: Rhs)
     where
         T: BitXorAssign<Rhs>,
         Rhs: Copy;
         
+    /// Asyncronously negates each element in the slice.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// # tokio_test::block_on(async {
+    /// let mut x = [1, 2, 3, 4, 5, 6, 7, 8];
+    /// 
+    /// x.neg_assign_all_async().await;
+    ///    
+    /// assert_eq!(x, [-1, -2, -3, -4, -5, -6, -7, -8]);
+    /// # });
+    /// ```
     #[cfg(feature = "alloc")]
     async fn neg_assign_all_async(&mut self)
     where
         T: Neg<Output = T>;
+    /// Asyncronously performs a logical NOT or bitwise NOT on each element in the slice.
+    /// 
+    /// Booleans will be treated with a logical NOT, while integers will be treated with a bitwise NOT.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// # tokio_test::block_on(async {
+    /// let mut x = [true, false, true, false, true, false, true, true];
+    /// 
+    /// x.not_assign_all_async().await;
+    ///    
+    /// assert_eq!(x, [false, true, false, true, false, true, false, false]);
+    /// # });
+    /// ```
     #[cfg(feature = "alloc")]
     async fn not_assign_all_async(&mut self)
     where
@@ -1123,6 +1569,65 @@ impl<T> /*const*/ SliceOps<T> for [T]
                 core::mem::transmute(&mut self[i])
             })?;
             i += 1;
+        }
+        Ok(())
+    }
+        
+    fn rvisit<'a, F>(&'a self, mut visitor: F)
+    where
+        F: FnMut(&'a T) /*+ ~const Destruct*/,
+        T: 'a
+    {
+        let l = self.len();
+        let mut i = l;
+        while i > 0
+        {
+            i -= 1;
+            visitor(&self[i]);
+        }
+    }
+    fn rvisit_mut<'a, F>(&'a mut self, mut visitor: F)
+    where
+        F: FnMut(&'a mut T) /*+ ~const Destruct*/,
+        T: 'a
+    {
+        let l = self.len();
+        let mut i = l;
+        while i > 0
+        {
+            i -= 1;
+            visitor(unsafe {
+                core::mem::transmute(&mut self[i])
+            });
+        }
+    }
+    fn try_rvisit<'a, E, F>(&'a self, mut visitor: F) -> Result<(), E>
+    where
+        F: FnMut(&'a T) -> Result<(), E> /*+ ~const Destruct*/,
+        T: 'a
+    {
+        let l = self.len();
+        let mut i = l;
+        while i > 0
+        {
+            i -= 1;
+            visitor(&self[i])?;
+        }
+        Ok(())
+    }
+    fn try_rvisit_mut<'a, E, F>(&'a mut self, mut visitor: F) -> Result<(), E>
+    where
+        F: FnMut(&'a mut T) -> Result<(), E> /*+ ~const Destruct*/,
+        T: 'a
+    {
+        let l = self.len();
+        let mut i = l;
+        while i > 0
+        {
+            i -= 1;
+            visitor(unsafe {
+                core::mem::transmute(&mut self[i])
+            })?;
         }
         Ok(())
     }
