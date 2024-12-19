@@ -170,19 +170,19 @@
 //! ```
 //!
 //! ## grey_code_permutation
-//! 
+//!
 //! - [grey_code_permutation](SliceOps::grey_code_permutation)
-//! 
+//!
 //! ```rust
 //! use slice_ops::*;
-//! 
+//!
 //! let mut arr = [0b000, 0b001, 0b010, 0b011, 0b100, 0b101, 0b110, 0b111];
-//! 
+//!
 //! arr.as_mut_slice().grey_code_permutation();
-//! 
+//!
 //! assert_eq!(arr, [0b000, 0b001, 0b011, 0b010, 0b110, 0b111, 0b101, 0b100])
 //! ```
-//! 
+//!
 //! # trim
 //!
 //! - [trim](SliceOps::trim) / [trim_mut](SliceOps::trim_mut)
