@@ -15,14 +15,12 @@ use crate::{Actions, ErrorRace};
 #[cfg(feature = "alloc")]
 use core::future::Future;
 
-#[deprecated(note = "This will be removed once it can be implemented as a method")]
 #[inline]
 pub const fn split_len(len: usize, mid: usize) -> (usize, usize)
 {
     assert!(mid <= len);
     (mid, len - mid)
 }
-#[deprecated(note = "This will be removed once it can be implemented as a method")]
 #[inline]
 pub const fn rsplit_len(len: usize, mid: usize) -> (usize, usize)
 {
