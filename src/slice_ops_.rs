@@ -3,7 +3,7 @@ use core::cmp::Ordering;
 use core::marker::Destruct;
 use core::mem::MaybeUninit;
 
-use core::{cmp::{Ord, PartialOrd}, ops::{AddAssign, BitAndAssign, BitOrAssign, BitXorAssign, DivAssign, FnMut, MulAssign, Neg, Not, RemAssign, ShlAssign, ShrAssign, SubAssign, AsyncFn}};
+use core::{cmp::{Ord, PartialOrd}, ops::{AddAssign, BitAndAssign, BitOrAssign, BitXorAssign, DivAssign, FnMut, MulAssign, Neg, Not, RemAssign, ShlAssign, ShrAssign, SubAssign}};
 
 pub use slice_trait::*;
 
@@ -13,7 +13,7 @@ use crate::{is_power_of, Padded};
 use crate::{Actions, ErrorRace};
 
 #[cfg(feature = "alloc")]
-use core::future::Future;
+use core::ops::AsyncFn;
 
 #[inline]
 pub const fn split_len(len: usize, mid: usize) -> (usize, usize)
@@ -101,7 +101,7 @@ where
     }
 }
 
-//#[const_trait]
+#[const_trait]
 pub trait SliceOps<T>: Slice<Item = T>
 {
     /// Differentiates the slice in-place.
@@ -188,7 +188,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn find_by<'a, F>(&'a self, f: F) -> Option<usize>
     where
-        F: FnMut(&'a T) -> bool /*+ ~const Destruct*/,
+        F: FnMut(&'a T) -> bool + ~const Destruct,
         T: 'a;
     /// Performs a linear search for the first value that matches the given key given a hashing function.
     /// 
@@ -208,7 +208,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn find_by_key<'a, B, F>(&'a self, b: &B, f: F) -> Option<usize>
     where
-        F: FnMut(&'a T) -> B /*+ ~const Destruct*/,
+        F: FnMut(&'a T) -> B + ~const Destruct,
         B: PartialEq,
         T: 'a;
         
@@ -248,7 +248,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn rfind_by<'a, F>(&'a self, f: F) -> Option<usize>
     where
-        F: FnMut(&'a T) -> bool /*+ ~const Destruct*/,
+        F: FnMut(&'a T) -> bool + ~const Destruct,
         T: 'a;
     /// Performs a linear search from the right for the first value that matches the given key given a hashing function.
     /// 
@@ -268,7 +268,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn rfind_by_key<'a, B, F>(&'a self, b: &B, f: F) -> Option<usize>
     where
-        F: FnMut(&'a T) -> B /*+ ~const Destruct*/,
+        F: FnMut(&'a T) -> B + ~const Destruct,
         B: PartialEq,
         T: 'a;
         
@@ -300,7 +300,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn argreduce<'a, F>(&'a self, reduction: F) -> Option<usize>
     where
-        F: FnMut(&'a T, &'a T) -> bool /*+ ~const Destruct*/,
+        F: FnMut(&'a T, &'a T) -> bool + ~const Destruct,
         T: 'a;
     
     /// Performs an argument reduction on the hashed values, finding the final righthand operand for which the comparison yields true.
@@ -332,8 +332,8 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn argreduce_key<'a, B, FR, FB>(&'a self, reduction: FR, hasher: FB) -> Option<usize>
     where
-        FR: FnMut(&B, &B) -> bool /*+ ~const Destruct*/,
-        FB: FnMut(&'a T) -> B /*+ ~const Destruct*/,
+        FR: FnMut(&B, &B) -> bool + ~const Destruct,
+        FB: FnMut(&'a T) -> B + ~const Destruct,
         T: 'a;
 
     /// Finds the index of the maximum value in the slice.
@@ -394,7 +394,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn argmax_by<'a, F>(&'a self, f: F) -> Option<usize>
     where
-        F: FnMut(&'a T, &'a T) -> Ordering /*+ ~const Destruct*/,
+        F: FnMut(&'a T, &'a T) -> Ordering + ~const Destruct,
         T: 'a;
     /// Finds the index of the minimum value in the slice, given a comparison predicate.
     /// 
@@ -416,7 +416,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn argmin_by<'a, F>(&'a self, f: F) -> Option<usize>
     where
-        F: FnMut(&'a T, &'a T) -> Ordering /*+ ~const Destruct*/,
+        F: FnMut(&'a T, &'a T) -> Ordering + ~const Destruct,
         T: 'a;
     /// Finds the index of the maximum key in the slice, given a hashing function.
     /// 
@@ -438,7 +438,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn argmax_by_key<'a, B, F>(&'a self, f: F) -> Option<usize>
     where
-        F: FnMut(&'a T) -> B /*+ ~const Destruct*/,
+        F: FnMut(&'a T) -> B + ~const Destruct,
         B: PartialOrd,
         T: 'a;
     /// Finds the index of the minimum key in the slice, given a hashing function.
@@ -461,7 +461,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn argmin_by_key<'a, B, F>(&'a self, f: F) -> Option<usize>
     where
-        F: FnMut(&'a T) -> B /*+ ~const Destruct*/,
+        F: FnMut(&'a T) -> B + ~const Destruct,
         B: PartialOrd,
         T: 'a;
         
@@ -483,7 +483,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn visit<'a, F>(&'a self, visitor: F)
     where
-        F: FnMut(&'a T) /*+ ~const Destruct*/,
+        F: FnMut(&'a T) + ~const Destruct,
         T: 'a;
     /// Mutably visits each element once, from left to right.
     /// 
@@ -505,7 +505,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn visit_mut<'a, F>(&'a mut self, visitor: F)
     where
-        F: FnMut(&'a mut T) /*+ ~const Destruct*/,
+        F: FnMut(&'a mut T) + ~const Destruct,
         T: 'a;
     /// Visits each element once, from left to right, or short-circuits if visitor returns error.
     /// 
@@ -532,7 +532,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn try_visit<'a, E, F>(&'a self, visitor: F) -> Result<(), E>
     where
-        F: FnMut(&'a T) -> Result<(), E> /*+ ~const Destruct*/,
+        F: FnMut(&'a T) -> Result<(), E> + ~const Destruct,
         T: 'a;
     /// Mutably visits each element once, from left to right, or short-circuits if visitor returns error.
     /// 
@@ -560,7 +560,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn try_visit_mut<'a, E, F>(&'a mut self, visitor: F) -> Result<(), E>
     where
-        F: FnMut(&'a mut T) -> Result<(), E> /*+ ~const Destruct*/,
+        F: FnMut(&'a mut T) -> Result<(), E> + ~const Destruct,
         T: 'a;
         
     /// Visits each element once, from right to left.
@@ -581,7 +581,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn rvisit<'a, F>(&'a self, visitor: F)
     where
-        F: FnMut(&'a T) /*+ ~const Destruct*/,
+        F: FnMut(&'a T) + ~const Destruct,
         T: 'a;
     /// Mutably visits each element once, from right to left.
     /// 
@@ -603,7 +603,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn rvisit_mut<'a, F>(&'a mut self, visitor: F)
     where
-        F: FnMut(&'a mut T) /*+ ~const Destruct*/,
+        F: FnMut(&'a mut T) + ~const Destruct,
         T: 'a;
     /// Visits each element once, from right to left, or short-circuits if visitor returns error.
     /// 
@@ -630,7 +630,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn try_rvisit<'a, E, F>(&'a self, visitor: F) -> Result<(), E>
     where
-        F: FnMut(&'a T) -> Result<(), E> /*+ ~const Destruct*/,
+        F: FnMut(&'a T) -> Result<(), E> + ~const Destruct,
         T: 'a;
     /// Mutably visits each element once, from right to left, or short-circuits if visitor returns error.
     /// 
@@ -658,7 +658,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn try_rvisit_mut<'a, E, F>(&'a mut self, visitor: F) -> Result<(), E>
     where
-        F: FnMut(&'a mut T) -> Result<(), E> /*+ ~const Destruct*/,
+        F: FnMut(&'a mut T) -> Result<(), E> + ~const Destruct,
         T: 'a;
         
     /// Visits each element once, asyncronously.
@@ -679,7 +679,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     #[cfg(feature = "alloc")]
     async fn visit_async<'a, F>(&'a self, visitor: F)
     where
-        F: AsyncFn(&'a T) /*+ ~const Destruct*/,
+        F: AsyncFn(&'a T) + ~const Destruct,
         T: 'a;
     /// Mutably visits each element once, asyncronously.
     /// 
@@ -701,7 +701,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     #[cfg(feature = "alloc")]
     async fn visit_mut_async<'a, F>(&'a mut self, visitor: F)
     where
-        F: AsyncFn(&'a mut T) /*+ ~const Destruct*/,
+        F: AsyncFn(&'a mut T) + ~const Destruct,
         T: 'a;
     /// Visits each element once, asyncronously, or short-circuits if visitor returns error.
     /// 
@@ -734,7 +734,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     #[cfg(feature = "alloc")]
     async fn try_visit_async<'a, E, F>(&'a self, visitor: F) -> Result<(), E>
     where
-        F: AsyncFn(&'a T) -> Result<(), E> /*+ ~const Destruct*/,
+        F: AsyncFn(&'a T) -> Result<(), E> + ~const Destruct,
         T: 'a;
     /// Mutably visits each element once, asyncronously, or short-circuits if visitor returns error.
     /// 
@@ -771,7 +771,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     #[cfg(feature = "alloc")]
     async fn try_visit_mut_async<'a, E, F>(&'a mut self, visitor: F) -> Result<(), E>
     where
-        F: AsyncFn(&'a mut T) -> Result<(), E> /*+ ~const Destruct*/,
+        F: AsyncFn(&'a mut T) -> Result<(), E> + ~const Destruct,
         T: 'a;
 
     /// Adds `rhs` to each element in the slice.
@@ -1478,7 +1478,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn trim<F>(&self, trim: F) -> &[T]
     where
-        F: FnMut(&T) -> bool /*+ ~const Destruct*/;
+        F: FnMut(&T) -> bool + ~const Destruct;
     /// Returns a trimmed subslice, trimmed from the left using a trimming predicate.
     /// 
     /// `trim` should return `true` for each element that should be trimmed.
@@ -1496,7 +1496,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn trim_front<F>(&self, trim: F) -> &[T]
     where
-        F: FnMut(&T) -> bool /*+ ~const Destruct*/;
+        F: FnMut(&T) -> bool + ~const Destruct;
     /// Returns a trimmed subslice, trimmed from the right using a trimming predicate.
     /// 
     /// `trim` should return `true` for each element that should be trimmed.
@@ -1514,7 +1514,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn trim_back<F>(&self, trim: F) -> &[T]
     where
-        F: FnMut(&T) -> bool /*+ ~const Destruct*/;
+        F: FnMut(&T) -> bool + ~const Destruct;
     /// Returns a mutable trimmed subslice, trimmed from both ends using a trimming predicate.
     /// 
     /// `trim` should return `true` for each element that should be trimmed.
@@ -1532,7 +1532,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn trim_mut<F>(&mut self, trim: F) -> &mut [T]
     where
-        F: FnMut(&T) -> bool /*+ ~const Destruct*/;
+        F: FnMut(&T) -> bool + ~const Destruct;
     /// Returns a mutable trimmed subslice, trimmed from the left using a trimming predicate.
     /// 
     /// `trim` should return `true` for each element that should be trimmed.
@@ -1550,7 +1550,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn trim_front_mut<F>(&mut self, trim: F) -> &mut [T]
     where
-        F: FnMut(&T) -> bool /*+ ~const Destruct*/;
+        F: FnMut(&T) -> bool + ~const Destruct;
     /// Returns a mutable trimmed subslice, trimmed from the right using a trimming predicate.
     /// 
     /// `trim` should return `true` for each element that should be trimmed.
@@ -1568,7 +1568,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn trim_back_mut<F>(&mut self, trim: F) -> &mut [T]
     where
-        F: FnMut(&T) -> bool /*+ ~const Destruct*/;
+        F: FnMut(&T) -> bool + ~const Destruct;
 }
 
 /// Waiting for `core::maker::TriviallyDrop` or some equivalent to arrive before making this const again...
@@ -1823,7 +1823,7 @@ impl<T> /*const*/ SliceOps<T> for [T]
         
     fn rvisit<'a, F>(&'a self, mut visitor: F)
     where
-        F: FnMut(&'a T) /*+ ~const Destruct*/,
+        F: FnMut(&'a T),
         T: 'a
     {
         let l = self.len();
@@ -1836,7 +1836,7 @@ impl<T> /*const*/ SliceOps<T> for [T]
     }
     fn rvisit_mut<'a, F>(&'a mut self, mut visitor: F)
     where
-        F: FnMut(&'a mut T) /*+ ~const Destruct*/,
+        F: FnMut(&'a mut T),
         T: 'a
     {
         let l = self.len();
@@ -1851,7 +1851,7 @@ impl<T> /*const*/ SliceOps<T> for [T]
     }
     fn try_rvisit<'a, E, F>(&'a self, mut visitor: F) -> Result<(), E>
     where
-        F: FnMut(&'a T) -> Result<(), E> /*+ ~const Destruct*/,
+        F: FnMut(&'a T) -> Result<(), E>,
         T: 'a
     {
         let l = self.len();
@@ -1865,7 +1865,7 @@ impl<T> /*const*/ SliceOps<T> for [T]
     }
     fn try_rvisit_mut<'a, E, F>(&'a mut self, mut visitor: F) -> Result<(), E>
     where
-        F: FnMut(&'a mut T) -> Result<(), E> /*+ ~const Destruct*/,
+        F: FnMut(&'a mut T) -> Result<(), E>,
         T: 'a
     {
         let l = self.len();
