@@ -110,7 +110,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// 
     /// It's assumed that the first value of the slice is preceded by zeros.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -120,6 +120,10 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// x.differentiate();
     /// 
     /// assert_eq!(x, [1, 4, 0, 1, -4, -3, 1, 0, 0]);
+    /// 
+    /// x.integrate();
+    /// 
+    /// assert_eq!(x, [1, 5, 5, 6, 2, -1, 0, 0, 0]);
     /// ```
     fn differentiate(&mut self)
     where
@@ -129,7 +133,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// 
     /// Each value will be added by the sum of all previous values.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -139,6 +143,10 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// x.integrate();
     /// 
     /// assert_eq!(x, [1, 6, 11, 17, 19, 18, 18, 18, 18]);
+    /// 
+    /// x.differentiate();
+    /// 
+    /// assert_eq!(x, [1, 5, 5, 6, 2, -1, 0, 0, 0]);
     /// ```
     fn integrate(&mut self)
     where
@@ -146,7 +154,7 @@ pub trait SliceOps<T>: Slice<Item = T>
 
     /// Performs a linear search for the first value that equals `x`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -164,7 +172,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         T: PartialEq;
     /// Performs a linear search for the first value that satisfies the given predicate.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -184,7 +192,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         T: 'a;
     /// Performs a linear search for the first value that matches the given key given a hashing function.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -206,7 +214,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         
     /// Performs a linear search from the right for the first value that equals `x`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -224,7 +232,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         T: PartialEq;
     /// Performs a linear search from the right for the first value that satisfies the given predicate.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -244,7 +252,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         T: 'a;
     /// Performs a linear search from the right for the first value that matches the given key given a hashing function.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -266,7 +274,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         
     /// Performs an argument reduction, finding the final righthand operand for which the comparison yields true.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -297,7 +305,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     
     /// Performs an argument reduction on the hashed values, finding the final righthand operand for which the comparison yields true.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -332,7 +340,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// 
     /// If there are multiple maxima, only the first will have its index returned.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -351,7 +359,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// 
     /// If there are multiple minimums, only the first will have its index returned.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -370,7 +378,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// 
     /// If there are multiple maxima, only the first will have its index returned.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -392,7 +400,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// 
     /// If there are multiple minimums, only the first will have its index returned.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -414,7 +422,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// 
     /// If there are multiple maxima, only the first will have its index returned.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -437,7 +445,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// 
     /// If there are multiple minimums, only the first will have its index returned.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -768,7 +776,7 @@ pub trait SliceOps<T>: Slice<Item = T>
 
     /// Adds `rhs` to each element in the slice.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -785,7 +793,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Subtracts each element in the slice by `rhs`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -802,7 +810,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Multiplies `rhs` to each element in the slice.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -819,7 +827,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Divides each element in the slice by `rhs`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -836,7 +844,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Replaces each value in the slice with its remainder when divided by `rhs`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -853,7 +861,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Shifts each element to the left by `rhs`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -870,7 +878,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Shifts each element to the right by `rhs`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -887,7 +895,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Performs a bitwise OR on each element using `rhs`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -904,7 +912,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Performs a bitwise AND on each element using `rhs`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -921,7 +929,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Performs a bitwise XOR on each element using `rhs`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -939,7 +947,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         
     /// Negates each element in the slice.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -957,7 +965,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// 
     /// Booleans will be treated with a logical NOT, while integers will be treated with a bitwise NOT.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -974,7 +982,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     
     /// Asyncronously adds `rhs` to each element in the slice.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -994,7 +1002,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Asyncronously subtracts each element in the slice by `rhs`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -1014,7 +1022,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Asyncronously multiplies `rhs` to each element in the slice.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -1034,7 +1042,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Asyncronously divides each element in the slice by `rhs`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -1054,7 +1062,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Asyncronously replaces each value in the slice with its remainder when divided by `rhs`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -1074,7 +1082,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Asyncronously shifts each element to the left by `rhs`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -1094,7 +1102,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Asyncronously shifts each element to the right by `rhs`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -1114,7 +1122,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Asyncronously performs a bitwise OR on each element using `rhs`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -1134,7 +1142,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Asyncronously performs a bitwise AND on each element using `rhs`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -1154,7 +1162,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         Rhs: Copy;
     /// Asyncronously performs a bitwise XOR on each element using `rhs`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -1175,7 +1183,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         
     /// Asyncronously negates each element in the slice.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -1196,7 +1204,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// 
     /// Booleans will be treated with a logical NOT, while integers will be treated with a bitwise NOT.
     /// 
-    /// # Examples
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -1216,9 +1224,9 @@ pub trait SliceOps<T>: Slice<Item = T>
 
     /// Shifts the entire slice as a SISO shift register with mutliple values to the left. The output is given in-place in `ìtems`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
-    /// ```
+    /// ```rust
     /// use slice_ops::*;
     /// 
     /// let mut register = [9, 8, 7, 6, 5, 4];
@@ -1233,9 +1241,9 @@ pub trait SliceOps<T>: Slice<Item = T>
     
     /// Shifts the entire slice as a SISO shift register with mutliple values to the left. The output is given in-place in `ìtems`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
-    /// ```
+    /// ```rust
     /// use slice_ops::*;
     /// 
     /// let mut register = [4, 5, 6, 7, 8, 9];
@@ -1250,9 +1258,9 @@ pub trait SliceOps<T>: Slice<Item = T>
     
     /// Shifts the entire slice as a SISO shift register to the left. The output is given in-place in `ìtem`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
-    /// ```
+    /// ```rust
     /// use slice_ops::*;
     /// 
     /// let mut register = [4, 3, 2];
@@ -1267,9 +1275,9 @@ pub trait SliceOps<T>: Slice<Item = T>
 
     /// Shifts the entire slice as a SISO shift register to the right. The output is given in-place in `ìtem`.
     /// 
-    /// # Examples
+    /// # Example
     /// 
-    /// ```
+    /// ```rust
     /// use slice_ops::*;
     /// 
     /// let mut register = [2, 3, 4];
@@ -1286,7 +1294,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// 
     /// # Example
     /// 
-    /// ```
+    /// ```rust
     /// use slice_ops::*;
     /// 
     /// let values = [1, 2, 3, 4];
@@ -1303,7 +1311,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// 
     /// # Example
     /// 
-    /// ```
+    /// ```rust
     /// use slice_ops::*;
     /// 
     /// let values = [1, 2, 3, 4];
@@ -1316,14 +1324,44 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// ```
     fn rsplit_len(&self, mid: usize) -> (usize, usize);
 
+    /// Splits the slice in two parts, from the right.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let values = [1, 2, 3, 4];
+    /// 
+    /// let (left, right) = values.rsplit_at(3);
+    /// 
+    /// assert_eq!(left, &[1]);
+    /// assert_eq!(right, &[2, 3, 4]);
+    /// ```
     fn rsplit_at(&self, mid: usize) -> (&[T], &[T]);
+    /// Splits the slice in two parts, from the right.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust
+    /// use slice_ops::*;
+    /// 
+    /// let mut values = [1, 2, 3, 4];
+    /// 
+    /// let (left, right) = values.rsplit_at_mut(3);
+    /// 
+    /// assert_eq!(left, &mut [1]);
+    /// assert_eq!(right, &mut [2, 3, 4]);
+    /// ```
     fn rsplit_at_mut(&mut self, mid: usize) -> (&mut [T], &mut [T]);
 
     /// Spreads elements equally across `M` slices.
     /// Slices will have equal length only if the operand slice's length is divisible by `M`.
     /// 
-    /// # Examples
+    /// # Example
+    /// 
     /// Take, for instance, that we want to divide a slice into odd and even elements:
+    /// 
     /// ```rust
     /// #![feature(generic_const_exprs)]
     /// 
@@ -1344,7 +1382,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// Spreads elements equally across `M` mutable slices.
     /// Slices will have equal length only if the operand slice's length is divisible by `M`.
     /// 
-    /// # Examples
+    /// # Example
     /// ```rust
     /// #![feature(generic_const_exprs)]
     /// 
@@ -1381,6 +1419,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// Performs the bit-reverse permutation. Length must be a power of 2.
     /// 
     /// # Example
+    /// 
     /// ```rust
     /// use slice_ops::*;
     /// 
@@ -1395,6 +1434,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// Performs the digit-reverse permutation with any radix. Length must be a power of the radix.
     /// 
     /// # Example
+    /// 
     /// ```rust
     /// use slice_ops::*;
     /// 
@@ -1409,6 +1449,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// Performs the grey code permutation. Length must be a power of 2.
     /// 
     /// # Example
+    /// 
     /// ```rust
     /// use slice_ops::*;
     /// 
@@ -1423,6 +1464,8 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// Returns a trimmed subslice, trimmed from both ends using a trimming predicate.
     /// 
     /// `trim` should return `true` for each element that should be trimmed.
+    /// 
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -1440,6 +1483,8 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// 
     /// `trim` should return `true` for each element that should be trimmed.
     /// 
+    /// # Example
+    /// 
     /// ```rust
     /// use slice_ops::*;
     /// 
@@ -1455,6 +1500,8 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// Returns a trimmed subslice, trimmed from the right using a trimming predicate.
     /// 
     /// `trim` should return `true` for each element that should be trimmed.
+    /// 
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
@@ -1472,6 +1519,8 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// 
     /// `trim` should return `true` for each element that should be trimmed.
     /// 
+    /// # Example
+    /// 
     /// ```rust
     /// use slice_ops::*;
     /// 
@@ -1488,6 +1537,8 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// 
     /// `trim` should return `true` for each element that should be trimmed.
     /// 
+    /// # Example
+    /// 
     /// ```rust
     /// use slice_ops::*;
     /// 
@@ -1503,6 +1554,8 @@ pub trait SliceOps<T>: Slice<Item = T>
     /// Returns a mutable trimmed subslice, trimmed from the right using a trimming predicate.
     /// 
     /// `trim` should return `true` for each element that should be trimmed.
+    /// 
+    /// # Example
     /// 
     /// ```rust
     /// use slice_ops::*;
