@@ -8,6 +8,7 @@
 #![feature(const_destruct)]
 #![feature(unboxed_closures)]
 #![allow(async_fn_in_trait)]
+#![feature(let_chains)]
 #![feature(generic_const_exprs)]
 #![feature(core_intrinsics)]
 

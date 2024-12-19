@@ -44,8 +44,7 @@ where
     T: Future<Output = Result<(), E>>,
     A: Allocator
 {
-    tasks: Box<[MaybeDone<T>], A>,
-    result: Result<(), E>
+    tasks: Box<[MaybeDone<T>], A>
 }
 #[cfg(not(feature = "alloc"))]
 pub struct ErrorRace<T, E, A>
@@ -79,8 +78,7 @@ where
         I: ExactSizeIterator<Item = T>
     {
         Self {
-            tasks: super::collect_boxed_slice_in(tasks.map(|task| MaybeDone::Future(task)), alloc),
-            result: Ok(())
+            tasks: super::collect_boxed_slice_in(tasks.map(|task| MaybeDone::Future(task)), alloc)
         }
     }
 }
@@ -101,27 +99,28 @@ where
         
         while i < l
         {
-            let ok = self.result.is_ok();
-
             let task = unsafe {
                 self.as_mut()
                     .map_unchecked_mut(|join| &mut join.tasks[i])
             };
             let ready = task.poll(cx)
                 .is_ready();
-            if ready && ok
+            if ready
             {
                 let join = unsafe {
                     self.as_mut()
                         .get_unchecked_mut()
                 };
                 let result = join.tasks[i].take_output();
-                if let Some(result) = result
+                if let Some(result) = result && result.is_err()
                 {
-                    join.result = result;
+                    return Poll::Ready(result)
                 }
             }
-            done &= ready;
+            else
+            {
+                done = false
+            }
             i += 1;
         }
 
@@ -130,12 +129,6 @@ where
             return Poll::Pending
         }
 
-        let result = unsafe {
-            &mut self.as_mut()
-                .get_unchecked_mut()
-                .result
-        };
-
-        Poll::Ready(core::mem::replace(result, Ok(())))
+        return Poll::Ready(Ok(()))
     }
 }
