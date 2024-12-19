@@ -129,6 +129,6 @@ where
             return Poll::Pending
         }
 
-        return Poll::Ready(Ok(()))
+        Poll::Ready(Ok(()))
     }
 }
