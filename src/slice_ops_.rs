@@ -2,6 +2,7 @@
 use core::cmp::Ordering;
 use core::mem::MaybeUninit;
 
+use core::ops::{Div, Sub};
 use core::{cmp::{Ord, PartialOrd}, ops::{AddAssign, BitAndAssign, BitOrAssign, BitXorAssign, DivAssign, FnMut, MulAssign, Neg, Not, RemAssign, ShlAssign, ShrAssign, SubAssign}};
 
 pub use slice_trait::*;
@@ -660,7 +661,7 @@ pub trait SliceOps<T>: Slice<Item = T>
         F: FnMut(&'a mut T) -> Result<(), E> /*+ ~const Destruct*/,
         T: 'a;
         
-    /// Visits each element once, asyncronously.
+    /// Visits each element once, asynchronously.
     /// 
     /// # Example
     /// 
@@ -680,7 +681,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     where
         F: AsyncFn(&'a T) /*+ ~const Destruct*/,
         T: 'a;
-    /// Mutably visits each element once, asyncronously.
+    /// Mutably visits each element once, asynchronously.
     /// 
     /// # Example
     /// 
@@ -702,7 +703,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     where
         F: AsyncFn(&'a mut T) /*+ ~const Destruct*/,
         T: 'a;
-    /// Visits each element once, asyncronously, or short-circuits if visitor returns error.
+    /// Visits each element once, asynchronously, or short-circuits if visitor returns error.
     /// 
     /// # Warning
     /// 
@@ -735,7 +736,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     where
         F: AsyncFn(&'a T) -> Result<(), E> /*+ ~const Destruct*/,
         T: 'a;
-    /// Mutably visits each element once, asyncronously, or short-circuits if visitor returns error.
+    /// Mutably visits each element once, asynchronously, or short-circuits if visitor returns error.
     /// 
     /// # Warning
     /// 
@@ -943,6 +944,13 @@ pub trait SliceOps<T>: Slice<Item = T>
     where
         T: BitXorAssign<Rhs>,
         Rhs: Copy;
+
+    fn rsub_assign_all<Lhs>(&mut self, lhs: Lhs)
+    where
+        Lhs: Copy + Sub<T, Output = T>;
+    fn rdiv_assign_all<Lhs>(&mut self, lhs: Lhs)
+    where
+        Lhs: Copy + Div<T, Output = T>;
         
     /// Negates each element in the slice.
     /// 
@@ -979,7 +987,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     where
         T: Not<Output = T>;
     
-    /// Asyncronously adds `rhs` to each element in the slice.
+    /// Asynchronously adds `rhs` to each element in the slice.
     /// 
     /// # Example
     /// 
@@ -999,7 +1007,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     where
         T: AddAssign<Rhs>,
         Rhs: Copy;
-    /// Asyncronously subtracts each element in the slice by `rhs`.
+    /// Asynchronously subtracts each element in the slice by `rhs`.
     /// 
     /// # Example
     /// 
@@ -1019,7 +1027,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     where
         T: SubAssign<Rhs>,
         Rhs: Copy;
-    /// Asyncronously multiplies `rhs` to each element in the slice.
+    /// Asynchronously multiplies `rhs` to each element in the slice.
     /// 
     /// # Example
     /// 
@@ -1039,7 +1047,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     where
         T: MulAssign<Rhs>,
         Rhs: Copy;
-    /// Asyncronously divides each element in the slice by `rhs`.
+    /// Asynchronously divides each element in the slice by `rhs`.
     /// 
     /// # Example
     /// 
@@ -1059,7 +1067,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     where
         T: DivAssign<Rhs>,
         Rhs: Copy;
-    /// Asyncronously replaces each value in the slice with its remainder when divided by `rhs`.
+    /// Asynchronously replaces each value in the slice with its remainder when divided by `rhs`.
     /// 
     /// # Example
     /// 
@@ -1079,7 +1087,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     where
         T: RemAssign<Rhs>,
         Rhs: Copy;
-    /// Asyncronously shifts each element to the left by `rhs`.
+    /// Asynchronously shifts each element to the left by `rhs`.
     /// 
     /// # Example
     /// 
@@ -1099,7 +1107,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     where
         T: ShlAssign<Rhs>,
         Rhs: Copy;
-    /// Asyncronously shifts each element to the right by `rhs`.
+    /// Asynchronously shifts each element to the right by `rhs`.
     /// 
     /// # Example
     /// 
@@ -1119,7 +1127,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     where
         T: ShrAssign<Rhs>,
         Rhs: Copy;
-    /// Asyncronously performs a bitwise OR on each element using `rhs`.
+    /// Asynchronously performs a bitwise OR on each element using `rhs`.
     /// 
     /// # Example
     /// 
@@ -1139,7 +1147,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     where
         T: BitOrAssign<Rhs>,
         Rhs: Copy;
-    /// Asyncronously performs a bitwise AND on each element using `rhs`.
+    /// Asynchronously performs a bitwise AND on each element using `rhs`.
     /// 
     /// # Example
     /// 
@@ -1159,7 +1167,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     where
         T: BitAndAssign<Rhs>,
         Rhs: Copy;
-    /// Asyncronously performs a bitwise XOR on each element using `rhs`.
+    /// Asynchronously performs a bitwise XOR on each element using `rhs`.
     /// 
     /// # Example
     /// 
@@ -1180,7 +1188,16 @@ pub trait SliceOps<T>: Slice<Item = T>
         T: BitXorAssign<Rhs>,
         Rhs: Copy;
         
-    /// Asyncronously negates each element in the slice.
+    #[cfg(feature = "alloc")]
+    async fn rsub_assign_all_async<Lhs>(&mut self, lhs: Lhs)
+    where
+        Lhs: Copy + Sub<T, Output = T>;
+    #[cfg(feature = "alloc")]
+    async fn rdiv_assign_all_async<Lhs>(&mut self, lhs: Lhs)
+    where
+        Lhs: Copy + Div<T, Output = T>;
+        
+    /// Asynchronously negates each element in the slice.
     /// 
     /// # Example
     /// 
@@ -1199,7 +1216,7 @@ pub trait SliceOps<T>: Slice<Item = T>
     async fn neg_assign_all_async(&mut self)
     where
         T: Neg<Output = T>;
-    /// Asyncronously performs a logical NOT or bitwise NOT on each element in the slice.
+    /// Asynchronously performs a logical NOT or bitwise NOT on each element in the slice.
     /// 
     /// Booleans will be treated with a logical NOT, while integers will be treated with a bitwise NOT.
     /// 
@@ -1987,6 +2004,23 @@ impl<T> /*const*/ SliceOps<T> for [T]
         self.visit_mut(|x| *x ^= rhs)
     }
     
+    fn rsub_assign_all<Lhs>(&mut self, lhs: Lhs)
+    where
+        Lhs: Copy + Sub<T, Output = T>
+    {
+        self.visit_mut(|x| unsafe {
+            core::ptr::write(x, lhs - core::ptr::read(x))
+        })
+    }
+    fn rdiv_assign_all<Lhs>(&mut self, lhs: Lhs)
+    where
+        Lhs: Copy + Div<T, Output = T>
+    {
+        self.visit_mut(|x| unsafe {
+            core::ptr::write(x, lhs / core::ptr::read(x))
+        })
+    }
+    
     fn neg_assign_all(&mut self)
     where
         T: Neg<Output = T>
@@ -2083,6 +2117,25 @@ impl<T> /*const*/ SliceOps<T> for [T]
         Rhs: Copy
     {
         self.visit_mut_async(async |x| *x ^= rhs).await
+    }
+    
+    #[cfg(feature = "alloc")]
+    async fn rsub_assign_all_async<Lhs>(&mut self, lhs: Lhs)
+    where
+        Lhs: Copy + Sub<T, Output = T>
+    {
+        self.visit_mut_async(async |x| unsafe {
+            core::ptr::write(x, lhs - core::ptr::read(x))
+        }).await
+    }
+    #[cfg(feature = "alloc")]
+    async fn rdiv_assign_all_async<Lhs>(&mut self, lhs: Lhs)
+    where
+        Lhs: Copy + Div<T, Output = T>
+    {
+        self.visit_mut_async(async |x| unsafe {
+            core::ptr::write(x, lhs / core::ptr::read(x))
+        }).await
     }
         
     #[cfg(feature = "alloc")]
