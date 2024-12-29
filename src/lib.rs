@@ -171,7 +171,7 @@
 //! assert_eq!(arr, [0b000, 0b100, 0b010, 0b110, 0b001, 0b101, 0b011, 0b111])
 //! ```
 //!
-//! ## grey_code_permutation
+//! # grey_code_permutation
 //!
 //! - [`grey_code_permutation`](crate::ops::SlicePermute::grey_code_permutation)
 //!
