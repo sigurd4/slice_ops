@@ -4,7 +4,7 @@ version = "1.0.5"
 edition = "2021"
 license = "MIT"
 keywords = ["slice", "util", "ops"]
-categories = ["rust-patterns", "no-std::no-alloc"]
+categories = ["rust-patterns", "algorithms", "asyncronous", "concurrency", "no-std::no-alloc", "rust-patterns"]
 description = "A selection of useful slice operations."
 repository = "https://github.com/sigurd4/slice_ops"
 
