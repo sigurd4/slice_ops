@@ -16,7 +16,7 @@
 
 Provides many useful utility methods for slices.
 
-This crate is a subset of the crates [`array__ops`](https://crates.io/crates/array__ops) and [`slice_math`](https://crates.io/crates/slice_math).
+This crate is a subset of the crate [`array__ops`](https://crates.io/crates/array__ops).
 
 ## integrate / differentiate
 
