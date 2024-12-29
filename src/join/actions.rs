@@ -4,7 +4,7 @@ use alloc::{alloc::Global, boxed::Box};
 use crate::private;
 
 #[cfg(feature = "alloc")]
-pub struct Actions<T, A = Global>
+pub struct BoxedActions<T, A = Global>
 where
     T: Future<Output = ()>,
     A: Allocator
@@ -12,7 +12,7 @@ where
     tasks: Box<[T], A>
 }
 #[cfg(not(feature = "alloc"))]
-pub struct Actions<T, A>
+pub struct BoxedActions<T, A>
 where
     T: Future<Output = ()>,
     A: Allocator
@@ -21,7 +21,7 @@ where
 }
 
 #[cfg(feature = "alloc")]
-impl<T> Actions<T>
+impl<T> BoxedActions<T>
 where
     T: Future<Output = ()>
 {
@@ -33,7 +33,7 @@ where
     }
 }
 
-impl<T, A> Actions<T, A>
+impl<T, A> BoxedActions<T, A>
 where
     T: Future<Output = ()>,
     A: Allocator
@@ -48,7 +48,7 @@ where
     }
 }
 
-impl<T, A> Future for Actions<T, A>
+impl<T, A> Future for BoxedActions<T, A>
 where
     T: Future<Output = ()>,
     A: Allocator

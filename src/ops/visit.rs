@@ -442,10 +442,10 @@ impl<T> SliceVisit<T> for [T]
         F: AsyncFn(&'a T),
         T: 'a
     {
-        use crate::join::Actions;
+        use crate::join::BoxedActions;
 
         #[allow(clippy::redundant_closure)]
-        Actions::new(self.iter().map(|x| visitor(x))).await
+        BoxedActions::new(self.iter().map(|x| visitor(x))).await
     }
     #[cfg(feature = "alloc")]
     async fn visit_mut_async<'a, F>(&'a mut self, visitor: F)
@@ -453,10 +453,10 @@ impl<T> SliceVisit<T> for [T]
         F: AsyncFn(&'a mut T),
         T: 'a
     {
-        use crate::join::Actions;
+        use crate::join::BoxedActions;
 
         #[allow(clippy::redundant_closure)]
-        Actions::new(self.iter_mut().map(|x| visitor(x))).await
+        BoxedActions::new(self.iter_mut().map(|x| visitor(x))).await
     }
     #[cfg(feature = "alloc")]
     async fn try_visit_async<'a, E, F>(&'a self, visitor: F) -> Result<(), E>
@@ -464,10 +464,10 @@ impl<T> SliceVisit<T> for [T]
         F: AsyncFn(&'a T) -> Result<(), E>,
         T: 'a
     {
-        use crate::join::TryActions;
+        use crate::join::TryBoxedActions;
 
         #[allow(clippy::redundant_closure)]
-        TryActions::new(self.iter().map(|x| visitor(x))).await
+        TryBoxedActions::new(self.iter().map(|x| visitor(x))).await
     }
     #[cfg(feature = "alloc")]
     async fn try_visit_mut_async<'a, E, F>(&'a mut self, visitor: F) -> Result<(), E>
@@ -475,10 +475,10 @@ impl<T> SliceVisit<T> for [T]
         F: AsyncFn(&'a mut T) -> Result<(), E>,
         T: 'a
     {
-        use crate::join::TryActions;
+        use crate::join::TryBoxedActions;
 
         #[allow(clippy::redundant_closure)]
-        TryActions::new(self.iter_mut().map(|x| visitor(x))).await
+        TryBoxedActions::new(self.iter_mut().map(|x| visitor(x))).await
     }
 }
 

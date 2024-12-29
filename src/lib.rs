@@ -215,6 +215,8 @@ moddef::moddef!(
     }
 );
 
+pub use slice_trait::*;
+
 #[inline]
 pub const fn split_len(len: usize, mid: usize) -> (usize, usize)
 {

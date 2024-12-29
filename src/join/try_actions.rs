@@ -6,7 +6,7 @@ use crate::private;
 use super::MaybeDone;
 
 #[cfg(feature = "alloc")]
-pub struct TryActions<T, E, A = Global>
+pub struct TryBoxedActions<T, E, A = Global>
 where
     T: Future<Output = Result<(), E>>,
     A: Allocator
@@ -14,7 +14,7 @@ where
     tasks: Box<[MaybeDone<T>], A>
 }
 #[cfg(not(feature = "alloc"))]
-pub struct TryActions<T, E, A>
+pub struct TryBoxedActions<T, E, A>
 where
     T: Future<Output = Result<(), E>>,
     A: Allocator
@@ -23,7 +23,7 @@ where
 }
 
 #[cfg(feature = "alloc")]
-impl<T, E> TryActions<T, E>
+impl<T, E> TryBoxedActions<T, E>
 where
     T: Future<Output = Result<(), E>>
 {
@@ -35,7 +35,7 @@ where
     }
 }
 
-impl<T, E, A> TryActions<T, E, A>
+impl<T, E, A> TryBoxedActions<T, E, A>
 where
     T: Future<Output = Result<(), E>>,
     A: Allocator
@@ -50,7 +50,7 @@ where
     }
 }
 
-impl<T, E, A> Future for TryActions<T, E, A>
+impl<T, E, A> Future for TryBoxedActions<T, E, A>
 where
     T: Future<Output = Result<(), E>>,
     A: Allocator
