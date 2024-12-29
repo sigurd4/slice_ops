@@ -1,6 +1,8 @@
 use core::{alloc::Allocator, future::Future, pin::Pin, task::{Context, Poll}};
 use alloc::{alloc::Global, boxed::Box};
 
+use crate::private;
+
 #[cfg(feature = "alloc")]
 pub struct Actions<T, A = Global>
 where
@@ -41,7 +43,7 @@ where
         I: ExactSizeIterator<Item = T>
     {
         Self {
-            tasks: super::collect_boxed_slice_in(tasks, alloc)
+            tasks: private::collect_boxed_slice_in(tasks, alloc)
         }
     }
 }

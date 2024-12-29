@@ -1,14 +1,14 @@
-use core::{alloc::Allocator, future::Future, mem::MaybeUninit, pin::Pin, task::{Context, Poll}};
-
-use alloc::boxed::Box;
+#[cfg(feature = "alloc")]
+use core::{future::Future, pin::Pin, task::{Context, Poll}};
 
 moddef::moddef!(
     flat(pub) mod {
-        actions,
-        error_race
+        actions for cfg(feature = "alloc"),
+        try_actions for cfg(feature = "alloc")
     }
 );
 
+#[cfg(feature = "alloc")]
 enum MaybeDone<F: Future>
 {
     Future(F),
@@ -16,6 +16,7 @@ enum MaybeDone<F: Future>
     Taken,
 }
 
+#[cfg(feature = "alloc")]
 impl<F: Future> MaybeDone<F>
 {
     pub fn take_output(&mut self) -> Option<F::Output>
@@ -32,6 +33,7 @@ impl<F: Future> MaybeDone<F>
     }
 }
 
+#[cfg(feature = "alloc")]
 impl<F: Future> Future for MaybeDone<F>
 {
     type Output = ();
@@ -52,29 +54,5 @@ impl<F: Future> Future for MaybeDone<F>
         }
 
         Poll::Ready(())
-    }
-}
-
-pub fn collect_boxed_slice_in<I, A>(mut values: I, alloc: A) -> Box<[I::Item], A>
-where
-    I: ExactSizeIterator,
-    A: Allocator
-{
-    let l = values.len();
-
-    let mut boxed = Box::new_uninit_slice_in(l, alloc);
-
-    let mut i = 0;
-    while i < l
-    {
-        boxed[i] = MaybeUninit::new(unsafe {
-            values.next()
-                .unwrap_unchecked()
-        });
-        i += 1;
-    }
-
-    unsafe {
-        boxed.assume_init()
     }
 }

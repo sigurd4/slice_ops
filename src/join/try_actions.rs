@@ -1,6 +1,8 @@
 use core::{alloc::Allocator, future::Future, pin::Pin, task::{Context, Poll}};
 use alloc::{alloc::Global, boxed::Box};
 
+use crate::private;
+
 use super::MaybeDone;
 
 #[cfg(feature = "alloc")]
@@ -43,7 +45,7 @@ where
         I: ExactSizeIterator<Item = T>
     {
         Self {
-            tasks: super::collect_boxed_slice_in(tasks.map(|task| MaybeDone::Future(task)), alloc)
+            tasks: private::collect_boxed_slice_in(tasks.map(|task| MaybeDone::Future(task)), alloc)
         }
     }
 }
