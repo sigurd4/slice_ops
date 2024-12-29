@@ -464,10 +464,10 @@ impl<T> SliceVisit<T> for [T]
         F: AsyncFn(&'a T) -> Result<(), E>,
         T: 'a
     {
-        use crate::join::ErrorRace;
+        use crate::join::TryActions;
 
         #[allow(clippy::redundant_closure)]
-        ErrorRace::new(self.iter().map(|x| visitor(x))).await
+        TryActions::new(self.iter().map(|x| visitor(x))).await
     }
     #[cfg(feature = "alloc")]
     async fn try_visit_mut_async<'a, E, F>(&'a mut self, visitor: F) -> Result<(), E>
@@ -475,10 +475,10 @@ impl<T> SliceVisit<T> for [T]
         F: AsyncFn(&'a mut T) -> Result<(), E>,
         T: 'a
     {
-        use crate::join::ErrorRace;
+        use crate::join::TryActions;
 
         #[allow(clippy::redundant_closure)]
-        ErrorRace::new(self.iter_mut().map(|x| visitor(x))).await
+        TryActions::new(self.iter_mut().map(|x| visitor(x))).await
     }
 }
 
