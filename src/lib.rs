@@ -17,7 +17,7 @@
 #![feature(generic_const_exprs)]
 
 //! Provides many useful utility methods for slices.
-//! 
+//!
 //! This crate is a subset of the crates [`array__ops`](https://crates.io/crates/array__ops) and [`slice_math`](https://crates.io/crates/slice_math).
 //!
 //! # integrate / differentiate
