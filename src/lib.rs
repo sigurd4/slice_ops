@@ -194,11 +194,11 @@
 //! ```rust
 //! use slice_ops::ops::*;
 //!
-//! let a = [0, 0, 0, 1, 2, 3, 0, 0, 0];
+//! let arr = [0, 0, 0, 1, 2, 3, 0, 0, 0];
 //!
-//! let at = a.trim(|&e| e == 0);
+//! let trimmed = arr.trim(|&e| e == 0);
 //!
-//! assert_eq!(at, &[1, 2, 3]);
+//! assert_eq!(trimmed, &[1, 2, 3]);
 //! ```
 
 #[cfg(feature = "alloc")]

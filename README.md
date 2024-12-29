@@ -192,9 +192,9 @@ assert_eq!(arr, [0b000, 0b001, 0b011, 0b010, 0b110, 0b111, 0b101, 0b100])
 ```rust
 use slice_ops::ops::*;
 
-let a = [0, 0, 0, 1, 2, 3, 0, 0, 0];
+let arr = [0, 0, 0, 1, 2, 3, 0, 0, 0];
 
-let at = a.trim(|&e| e == 0);
+let trimmed = arr.trim(|&e| e == 0);
 
-assert_eq!(at, &[1, 2, 3]);
+assert_eq!(trimmed, &[1, 2, 3]);
 ```
