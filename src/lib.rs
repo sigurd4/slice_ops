@@ -13,8 +13,8 @@
 #![feature(maybe_uninit_uninit_array)]
 #![feature(maybe_uninit_array_assume_init)]
 #![feature(let_chains)]
-#![feature(generic_const_exprs)]
 #![feature(core_intrinsics)]
+#![feature(generic_const_exprs)]
 
 //! Provides many useful utility methods for slices.
 //!

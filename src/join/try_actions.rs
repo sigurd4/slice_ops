@@ -61,32 +61,39 @@ where
     {
         let mut done = true;
 
-        let l = self.tasks.len();
+        let len = self.tasks.len();
         let mut i = 0;
         
-        while i < l
+        while i < len
         {
             let task = unsafe {
                 self.as_mut()
                     .map_unchecked_mut(|join| &mut join.tasks[i])
             };
-            let ready = task.poll(cx)
-                .is_ready();
-            if ready
+            if !task.is_taken()
             {
-                let join = unsafe {
-                    self.as_mut()
-                        .get_unchecked_mut()
-                };
-                let result = join.tasks[i].take_output();
-                if let Some(result) = result && result.is_err()
+                let ready = task.poll(cx)
+                    .is_ready();
+                if ready
                 {
-                    return Poll::Ready(result)
+                    let join = unsafe {
+                        self.as_mut()
+                            .get_unchecked_mut()
+                    };
+                    let result = join.tasks[i].take_output();
+                    if let Some(result) = result && result.is_err()
+                    {
+                        for task in join.tasks.iter_mut()
+                        {
+                            task.cancel()
+                        }
+                        return Poll::Ready(result)
+                    }
                 }
-            }
-            else
-            {
-                done = false
+                else
+                {
+                    done = false
+                }
             }
             i += 1;
         }
