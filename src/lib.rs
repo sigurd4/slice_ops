@@ -207,7 +207,7 @@ extern crate alloc;
 moddef::moddef!(
     pub mod {
         ops,
-        join,
+        future,
         padded
     },
     mod {

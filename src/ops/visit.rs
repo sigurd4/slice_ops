@@ -442,7 +442,7 @@ impl<T> SliceVisit<T> for [T]
         F: AsyncFn(&'a T),
         T: 'a
     {
-        use crate::join::BoxedActions;
+        use crate::future::BoxedActions;
 
         #[allow(clippy::redundant_closure)]
         BoxedActions::new(self.iter().map(|x| visitor(x))).await
@@ -453,7 +453,7 @@ impl<T> SliceVisit<T> for [T]
         F: AsyncFn(&'a mut T),
         T: 'a
     {
-        use crate::join::BoxedActions;
+        use crate::future::BoxedActions;
 
         #[allow(clippy::redundant_closure)]
         BoxedActions::new(self.iter_mut().map(|x| visitor(x))).await
@@ -464,7 +464,7 @@ impl<T> SliceVisit<T> for [T]
         F: AsyncFn(&'a T) -> Result<(), E>,
         T: 'a
     {
-        use crate::join::TryBoxedActions;
+        use crate::future::TryBoxedActions;
 
         #[allow(clippy::redundant_closure)]
         TryBoxedActions::new(self.iter().map(|x| visitor(x))).await
@@ -475,7 +475,7 @@ impl<T> SliceVisit<T> for [T]
         F: AsyncFn(&'a mut T) -> Result<(), E>,
         T: 'a
     {
-        use crate::join::TryBoxedActions;
+        use crate::future::TryBoxedActions;
 
         #[allow(clippy::redundant_closure)]
         TryBoxedActions::new(self.iter_mut().map(|x| visitor(x))).await
