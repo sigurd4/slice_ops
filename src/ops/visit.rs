@@ -250,7 +250,7 @@ pub trait SliceVisit<T>: Slice<Item = T>
     /// 
     /// When any of the tasks return an error, all other tasks will be ignored. The tasks are not nessecarily stopped, and may still be running in the background.
     /// 
-    /// If you want to wait for all tasks to complete, keep polling the future until it returns an [Ok](core::result::Result).
+    /// If you want to wait for all tasks to complete, keep polling the future until it returns an [`Ok`](core::result::Result).
     /// 
     /// # Example
     /// 
@@ -283,7 +283,7 @@ pub trait SliceVisit<T>: Slice<Item = T>
     /// 
     /// When any of the tasks return an error, all other tasks will be ignored. The tasks are not nessecarily stopped, and may still be running in the background.
     /// 
-    /// If you want to wait for all tasks to complete, keep polling the future until it returns an [Ok](core::result::Result).
+    /// If you want to wait for all tasks to complete, keep polling the future until it returns an [`Ok`](core::result::Result).
     /// 
     /// # Example
     /// 

@@ -20,8 +20,8 @@
 //!
 //! # integrate / differentiate
 //!
-//! - [integrate](crate::ops::SliceIntegrate::integrate)
-//! - [differentiate](crate::ops::SliceDifferentiate::differentiate)
+//! - [`integrate`](crate::ops::SliceIntegrate::integrate)
+//! - [`differentiate`](crate::ops::SliceDifferentiate::differentiate)
 //!
 //! ```rust
 //! use slice_ops::ops::*;
@@ -39,9 +39,9 @@
 //!
 //! # find
 //!
-//! - [find](crate::ops::SliceFind::find) / [rfind](crate::ops::SliceFind::rfind)
-//! - [find_by](crate::ops::SliceFind::find_by) / [rfind_by](crate::ops::SliceFind::rfind_by)
-//! - [find_by_key](crate::ops::SliceFind::find_by_key) / [rfind_by](crate::ops::SliceFind::rfind_by)
+//! - [`find`](crate::ops::SliceFind::find) / [`rfind`](crate::ops::SliceFind::rfind)
+//! - [`find_by`](crate::ops::SliceFind::find_by) / [`rfind_by`](crate::ops::SliceFind::rfind_by)
+//! - [`find_by_key`](crate::ops::SliceFind::find_by_key) / [`rfind_by`](crate::ops::SliceFind::rfind_by)
 //!
 //! ```rust
 //! use slice_ops::ops::*;
@@ -57,9 +57,9 @@
 //!
 //! # argmax / argmin
 //!
-//! - [argmax](crate::ops::SliceArgMinMax::argmax) / [argmin](crate::ops::SliceArgMinMax::argmin)
-//! - [argmax_by](crate::ops::SliceArgMinMax::argmax_by) / [argmin_by](crate::ops::SliceArgMinMax::argmin_by)
-//! - [argmax_by_key](crate::ops::SliceArgMinMax::argmax_by_key) / [argmin_by_key](crate::ops::SliceArgMinMax::argmin_by_key)
+//! - [`argmax`](crate::ops::SliceArgMinMax::argmax) / [`argmin`](crate::ops::SliceArgMinMax::argmin)
+//! - [`argmax_by`](crate::ops::SliceArgMinMax::argmax_by) / [`argmin_by`](crate::ops::SliceArgMinMax::argmin_by)
+//! - [`argmax_by_key`](crate::ops::SliceArgMinMax::argmax_by_key) / [`argmin_by_key`](crate::ops::SliceArgMinMax::argmin_by_key)
 //!
 //! ```rust
 //! use slice_ops::ops::*;
@@ -74,12 +74,12 @@
 //!
 //! # visit
 //!
-//! - [visit](crate::ops::SliceVisit::visit) / [visit_mut](crate::ops::SliceVisit::visit_mut)
-//! - [rvisit](crate::ops::SliceVisit::rvisit) / [rvisit_mut](crate::ops::SliceVisit::rvisit_mut)
-//! - [visit_async](crate::ops::SliceVisit::visit_async) / [visit_mut_async](crate::ops::SliceVisit::visit_mut_async)
-//! - [try_visit](crate::ops::SliceVisit::try_visit) / [try_visit_mut](crate::ops::SliceVisit::try_visit_mut)
-//! - [try_rvisit](crate::ops::SliceVisit::try_rvisit) / [try_rvisit_mut](crate::ops::SliceVisit::try_rvisit_mut)
-//! - [try_visit_async](crate::ops::SliceVisit::try_visit_async) / [try_visit_mut_async](crate::ops::SliceVisit::try_visit_mut_async)
+//! - [`visit`](crate::ops::SliceVisit::visit) / [`visit_mut`](crate::ops::SliceVisit::visit_mut)
+//! - [`rvisit`](crate::ops::SliceVisit::rvisit) / [`rvisit_mut`](crate::ops::SliceVisit::rvisit_mut)
+//! - [`visit_async`](crate::ops::SliceVisit::visit_async) / [`visit_mut_async`](crate::ops::SliceVisit::visit_mut_async)
+//! - [`try_visit`](crate::ops::SliceVisit::try_visit) / [`try_visit_mut`](crate::ops::SliceVisit::try_visit_mut)
+//! - [`try_rvisit`](crate::ops::SliceVisit::try_rvisit) / [`try_rvisit_mut`](crate::ops::SliceVisit::try_rvisit_mut)
+//! - [`try_visit_async`](crate::ops::SliceVisit::try_visit_async) / [`try_visit_mut_async`](crate::ops::SliceVisit::try_visit_mut_async)
 //!
 //! ```rust
 //! use slice_ops::ops::*;
@@ -98,18 +98,18 @@
 //!
 //! # ..._assign_all
 //!
-//! - [add_assign_all](crate::ops::SliceAddAssign::add_assign_all) / [add_assign_all_async](crate::ops::SliceAddAssign::add_assign_all_async)
-//! - [sub_assign_all](crate::ops::SliceSubAssign::sub_assign_all) / [sub_assign_all_async](crate::ops::SliceSubAssign::sub_assign_all_async)
-//! - [mul_assign_all](crate::ops::SliceMulAssign::mul_assign_all) / [mul_assign_all_async](crate::ops::SliceMulAssign::mul_assign_all_async)
-//! - [div_assign_all](crate::ops::SliceDivAssign::div_assign_all) / [div_assign_all_async](crate::ops::SliceDivAssign::div_assign_all_async)
-//! - [rem_assign_all](crate::ops::SliceRemAssign::rem_assign_all) / [rem_assign_all_async](crate::ops::SliceRemAssign::rem_assign_all_async)
-//! - [shl_assign_all](crate::ops::SliceShlAssign::shl_assign_all) / [shl_assign_all_async](crate::ops::SliceShlAssign::shl_assign_all_async)
-//! - [shr_assign_all](crate::ops::SliceShrAssign::shr_assign_all) / [shr_assign_all_async](crate::ops::SliceShrAssign::shr_assign_all_async)
-//! - [bitor_assign_all](crate::ops::SliceBitOrAssign::bitor_assign_all) / [bitor_assign_all_async](crate::ops::SliceBitOrAssign::bitor_assign_all_async)
-//! - [bitand_assign_all](crate::ops::SliceBitAndAssign::bitand_assign_all) / [bitand_assign_all_async](crate::ops::SliceBitAndAssign::bitand_assign_all_async)
-//! - [bitxor_assign_all](crate::ops::SliceBitXorAssign::bitxor_assign_all) / [bitxor_assign_all_async](crate::ops::SliceBitXorAssign::bitxor_assign_all_async)
-//! - [neg_assign_all](crate::ops::SliceNegAssign::neg_assign_all) / [neg_assign_all_async](crate::ops::SliceNegAssign::neg_assign_all_async)
-//! - [not_assign_all](crate::ops::SliceNotAssign::not_assign_all) / [not_assign_all_async](crate::ops::SliceNotAssign::not_assign_all_async)
+//! - [`add_assign_all`](crate::ops::SliceAddAssign::add_assign_all) / [`add_assign_all_async`](crate::ops::SliceAddAssign::add_assign_all_async)
+//! - [`sub_assign_all`](crate::ops::SliceSubAssign::sub_assign_all) / [`sub_assign_all_async`](crate::ops::SliceSubAssign::sub_assign_all_async)
+//! - [`mul_assign_all`](crate::ops::SliceMulAssign::mul_assign_all) / [`mul_assign_all_async`](crate::ops::SliceMulAssign::mul_assign_all_async)
+//! - [`div_assign_all`](crate::ops::SliceDivAssign::div_assign_all) / [`div_assign_all_async`](crate::ops::SliceDivAssign::div_assign_all_async)
+//! - [`rem_assign_all`](crate::ops::SliceRemAssign::rem_assign_all) / [`rem_assign_all_async`](crate::ops::SliceRemAssign::rem_assign_all_async)
+//! - [`shl_assign_all`](crate::ops::SliceShlAssign::shl_assign_all) / [`shl_assign_all_async`](crate::ops::SliceShlAssign::shl_assign_all_async)
+//! - [`shr_assign_all`](crate::ops::SliceShrAssign::shr_assign_all) / [`shr_assign_all_async`](crate::ops::SliceShrAssign::shr_assign_all_async)
+//! - [`bitor_assign_all`](crate::ops::SliceBitOrAssign::bitor_assign_all) / [`bitor_assign_all_async`](crate::ops::SliceBitOrAssign::bitor_assign_all_async)
+//! - [`bitand_assign_all`](crate::ops::SliceBitAndAssign::bitand_assign_all) / [`bitand_assign_all_async`](crate::ops::SliceBitAndAssign::bitand_assign_all_async)
+//! - [`bitxor_assign_all`](crate::ops::SliceBitXorAssign::bitxor_assign_all) / [`bitxor_assign_all_async`](crate::ops::SliceBitXorAssign::bitxor_assign_all_async)
+//! - [`neg_assign_all`](crate::ops::SliceNegAssign::neg_assign_all) / [`neg_assign_all_async`](crate::ops::SliceNegAssign::neg_assign_all_async)
+//! - [`not_assign_all`](crate::ops::SliceNotAssign::not_assign_all) / [`not_assign_all_async`](crate::ops::SliceNotAssign::not_assign_all_async)
 //!
 //! ```rust
 //! use slice_ops::ops::*;
@@ -123,8 +123,8 @@
 //!
 //! # shift
 //!
-//! - [shift_many_left](crate::ops::SliceShift::shift_many_left) / [shift_many_right](crate::ops::SliceShift::shift_many_right)
-//! - [shift_left](crate::ops::SliceShift::shift_left) / [shift_right](crate::ops::SliceShift::shift_right)
+//! - [`shift_many_left`](crate::ops::SliceShift::shift_many_left) / [`shift_many_right`](crate::ops::SliceShift::shift_many_right)
+//! - [`shift_left`](crate::ops::SliceShift::shift_left) / [`shift_right`](crate::ops::SliceShift::shift_right)
 //!
 //! ```rust
 //! use slice_ops::ops::*;
@@ -140,7 +140,7 @@
 //!
 //! # spread
 //!
-//! - [spread](crate::ops::SliceSpread::spread) / [spread_mut](crate::ops::SliceSpread::spread_mut)
+//! - [`spread`](crate::ops::SliceSpread::spread) / [`spread_mut`](crate::ops::SliceSpread::spread_mut)
 //!
 //! ```rust
 //! #![feature(generic_const_exprs)]
@@ -158,8 +158,8 @@
 //!
 //! # bit_rev_permutation
 //!
-//! - [bit_rev_permutation](crate::ops::SlicePermute::bit_rev_permutation)
-//! - [digit_rev_permutation](crate::ops::SlicePermute::digit_rev_permutation)
+//! - [`bit_rev_permutation`](crate::ops::SlicePermute::bit_rev_permutation)
+//! - [`digit_rev_permutation`](crate::ops::SlicePermute::digit_rev_permutation)
 //!
 //! ```rust
 //! use slice_ops::ops::*;
@@ -173,7 +173,7 @@
 //!
 //! ## grey_code_permutation
 //!
-//! - [grey_code_permutation](crate::ops::SlicePermute::grey_code_permutation)
+//! - [`grey_code_permutation`](crate::ops::SlicePermute::grey_code_permutation)
 //!
 //! ```rust
 //! use slice_ops::ops::*;
@@ -187,9 +187,9 @@
 //!
 //! # trim
 //!
-//! - [trim](crate::ops::SliceTrim::trim) / [trim_mut](crate::ops::SliceTrim::trim_mut)
-//! - [trim_front](crate::ops::SliceTrim::trim_front) / [trim_front_mut](crate::ops::SliceTrim::trim_front_mut)
-//! - [trim_back](crate::ops::SliceTrim::trim_back) / [trim_back_mut](crate::ops::SliceTrim::trim_back_mut)
+//! - [`trim`](crate::ops::SliceTrim::trim) / [`trim_mut`](crate::ops::SliceTrim::trim_mut)
+//! - [`trim_front`](crate::ops::SliceTrim::trim_front) / [`trim_front_mut`](crate::ops::SliceTrim::trim_front_mut)
+//! - [`trim_back`](crate::ops::SliceTrim::trim_back) / [`trim_back_mut`](crate::ops::SliceTrim::trim_back_mut)
 //!
 //! ```rust
 //! use slice_ops::ops::*;
