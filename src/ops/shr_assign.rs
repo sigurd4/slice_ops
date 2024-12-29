@@ -12,7 +12,7 @@ pub trait SliceShrAssign<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let mut x = [0b1, 0b10, 0b11, 0b100, 0b101, 0b110, 0b111, 0b1000];
     /// 
@@ -30,7 +30,7 @@ pub trait SliceShrAssign<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// # tokio_test::block_on(async {
     /// let mut x = [0b1, 0b10, 0b11, 0b100, 0b101, 0b110, 0b111, 0b1000];

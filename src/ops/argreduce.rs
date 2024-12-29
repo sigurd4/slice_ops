@@ -8,7 +8,7 @@ pub trait SliceArgReduce<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// fn my_argmax<T>(slice: &[T]) -> Option<usize>
     /// where
@@ -39,7 +39,7 @@ pub trait SliceArgReduce<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// fn hasher(str: &&str) -> i32
     /// {

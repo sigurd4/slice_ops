@@ -12,7 +12,7 @@ pub trait SliceIntegrate<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let mut x = [1, 5, 5, 6, 2, -1, 0, 0, 0];
     /// 

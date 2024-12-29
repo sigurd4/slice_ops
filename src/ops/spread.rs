@@ -17,7 +17,7 @@ pub trait SliceSpread<T>: Slice<Item = T>
     /// ```rust
     /// #![feature(generic_const_exprs)]
     /// 
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let arr = [1, 2, 3];
     /// let slice = arr.as_slice();
@@ -38,7 +38,7 @@ pub trait SliceSpread<T>: Slice<Item = T>
     /// ```rust
     /// #![feature(generic_const_exprs)]
     /// 
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let mut arr = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"];
     /// let slice = arr.as_mut_slice();

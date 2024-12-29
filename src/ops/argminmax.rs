@@ -14,7 +14,7 @@ pub trait SliceArgMinMax<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// //                v
     /// let x = [1, 5, 5, 6, 2, -1, 0, -4, -1, 6];
@@ -33,7 +33,7 @@ pub trait SliceArgMinMax<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// //                              v
     /// let x = [1, 5, 5, 6, 2, -1, 0, -4, -1, 6];
@@ -52,7 +52,7 @@ pub trait SliceArgMinMax<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// //                v
     /// let x = [1, 5, 5, 6, 2, -1, 0, -4, -1, 6];
@@ -74,7 +74,7 @@ pub trait SliceArgMinMax<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// //                              v
     /// let x = [1, 5, 5, 6, 2, -1, 0, -4, -1, 6];
@@ -96,7 +96,7 @@ pub trait SliceArgMinMax<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// //                       v
     /// let x = ["1", "5", "5", "6", "2", "-1", "0", "-4", "-1", "6"];
@@ -119,7 +119,7 @@ pub trait SliceArgMinMax<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// //                                  v
     /// let x = ["1", "5", "5", "6", "2", "-1", "0", "-4", "-1", "6"];

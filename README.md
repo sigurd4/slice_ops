@@ -22,7 +22,7 @@ Provides many useful utility methods for slices.
 - `differentiate`
 
 ```rust
-use slice_ops::*;
+use slice_ops::ops::*;
 
 let mut x = [1, 5, 5, 6, 2, -1, 0, 0, 0];
 
@@ -42,7 +42,7 @@ assert_eq!(x, [1, 5, 5, 6, 2, -1, 0, 0, 0]);
 - `find_by_key` / `rfind_by`
 
 ```rust
-use slice_ops::*;
+use slice_ops::ops::*;
 
 //                   v
 let x = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3];
@@ -60,7 +60,7 @@ assert_eq!(x[i], 5);
 - `argmax_by_key` / `argmin_by_key`
 
 ```rust
-use slice_ops::*;
+use slice_ops::ops::*;
 
 //                v
 let x = [1, 5, 5, 6, 2, -1, 0, -4, -1, 6];
@@ -80,7 +80,7 @@ assert_eq!(i, 3);
 - `try_visit_async` / `try_visit_mut_async`
 
 ```rust
-use slice_ops::*;
+use slice_ops::ops::*;
 
 let mut x = [0; 8];
 
@@ -110,7 +110,7 @@ assert_eq!(x, [1, 2, 3, 4, 5, 6, 7, 8]);
 - `not_assign_all` / `not_assign_all_async`
 
 ```rust
-use slice_ops::*;
+use slice_ops::ops::*;
 
 let mut x = [1, 2, 3, 4, 5, 6, 7, 8];
 
@@ -125,7 +125,7 @@ assert_eq!(x, [2, 4, 6, 8, 10, 12, 14, 16]);
 - `shift_left` / `shift_right`
 
 ```rust
-use slice_ops::*;
+use slice_ops::ops::*;
 
 let mut register = [4, 5, 6, 7, 8, 9];
 let mut io = [1, 2, 3];
@@ -136,19 +136,19 @@ assert_eq!(register, [1, 2, 3, 4, 5, 6]);
 assert_eq!(io, [7, 8, 9]);
 ```
 
-## spread_chunks
+## spread
 
-- `spread_chunks` / `spread_chunks_mut`
+- `spread` / `spread_mut`
 
 ```rust
 #![feature(generic_const_exprs)]
 
-use slice_ops::*;
+use slice_ops::ops::*;
 
 let arr = [1, 2, 3];
 let slice = arr.as_slice();
 
-let [odd, even] = slice.spread_chunks();
+let [odd, even] = slice.spread();
 
 assert_eq!(odd, [1, 3]);
 assert_eq!(even, [2]);
@@ -160,7 +160,7 @@ assert_eq!(even, [2]);
 - `digit_rev_permutation`
 
 ```rust
-use slice_ops::*;
+use slice_ops::ops::*;
 
 let mut arr = [0b000, 0b001, 0b010, 0b011, 0b100, 0b101, 0b110, 0b111];
 
@@ -174,7 +174,7 @@ assert_eq!(arr, [0b000, 0b100, 0b010, 0b110, 0b001, 0b101, 0b011, 0b111])
 - `grey_code_permutation`
 
 ```rust
-use slice_ops::*;
+use slice_ops::ops::*;
 
 let mut arr = [0b000, 0b001, 0b010, 0b011, 0b100, 0b101, 0b110, 0b111];
 
@@ -190,7 +190,7 @@ assert_eq!(arr, [0b000, 0b001, 0b011, 0b010, 0b110, 0b111, 0b101, 0b100])
 - `trim_back` / `trim_back_mut`
 
 ```rust
-use slice_ops::*;
+use slice_ops::ops::*;
 
 let a = [0, 0, 0, 1, 2, 3, 0, 0, 0];
 

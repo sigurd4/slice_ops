@@ -8,7 +8,7 @@ pub trait SliceShift<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let mut register = [9, 8, 7, 6, 5, 4];
     /// let mut io = [3, 2, 1];
@@ -25,7 +25,7 @@ pub trait SliceShift<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let mut register = [4, 5, 6, 7, 8, 9];
     /// let mut io = [1, 2, 3];
@@ -42,7 +42,7 @@ pub trait SliceShift<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let mut register = [4, 3, 2];
     /// let mut io = 1;
@@ -59,7 +59,7 @@ pub trait SliceShift<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let mut register = [2, 3, 4];
     /// let mut io = 1;

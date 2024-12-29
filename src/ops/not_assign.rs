@@ -14,7 +14,7 @@ pub trait SliceNotAssign<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let mut x = [true, false, true, false, true, false, true, true];
     /// 
@@ -33,7 +33,7 @@ pub trait SliceNotAssign<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// # tokio_test::block_on(async {
     /// let mut x = [true, false, true, false, true, false, true, true];

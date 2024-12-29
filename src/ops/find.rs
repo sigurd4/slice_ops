@@ -8,7 +8,7 @@ pub trait SliceFind<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// //                   v
     /// let x = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3];
@@ -26,7 +26,7 @@ pub trait SliceFind<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// //                      v
     /// let x = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3];
@@ -46,7 +46,7 @@ pub trait SliceFind<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// //             v
     /// let x = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3];
@@ -68,7 +68,7 @@ pub trait SliceFind<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// //                               v
     /// let x = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3];
@@ -86,7 +86,7 @@ pub trait SliceFind<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// //                            v
     /// let x = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3];
@@ -106,7 +106,7 @@ pub trait SliceFind<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// //                            v
     /// let x = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3];

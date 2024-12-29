@@ -10,7 +10,7 @@ pub trait SliceTrim<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let a = [0, 0, 0, 1, 2, 3, 0, 0, 0];
     /// 
@@ -28,7 +28,7 @@ pub trait SliceTrim<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let a = [0, 0, 0, 1, 2, 3, 0, 0, 0];
     /// 
@@ -46,7 +46,7 @@ pub trait SliceTrim<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let a = [0, 0, 0, 1, 2, 3, 0, 0, 0];
     /// 
@@ -64,7 +64,7 @@ pub trait SliceTrim<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let mut a = [0, 0, 0, 1, 2, 3, 0, 0, 0];
     /// 
@@ -82,7 +82,7 @@ pub trait SliceTrim<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let mut a = [0, 0, 0, 1, 2, 3, 0, 0, 0];
     /// 
@@ -100,7 +100,7 @@ pub trait SliceTrim<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let mut a = [0, 0, 0, 1, 2, 3, 0, 0, 0];
     /// 

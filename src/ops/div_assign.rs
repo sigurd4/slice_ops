@@ -12,7 +12,7 @@ pub trait SliceDivAssign<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let mut x = [1, 2, 3, 4, 5, 6, 7, 8];
     /// 
@@ -30,7 +30,7 @@ pub trait SliceDivAssign<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// # tokio_test::block_on(async {
     /// let mut x = [1, 2, 3, 4, 5, 6, 7, 8];

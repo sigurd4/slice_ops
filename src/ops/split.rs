@@ -8,7 +8,7 @@ pub trait SliceSplit<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let values = [1, 2, 3, 4];
     /// 
@@ -24,7 +24,7 @@ pub trait SliceSplit<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let values = [1, 2, 3, 4];
     /// 
@@ -47,7 +47,7 @@ pub trait SliceSplit<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let values = [1, 2, 3, 4];
     /// 
@@ -62,7 +62,7 @@ pub trait SliceSplit<T>: Slice<Item = T>
     /// # Example
     /// 
     /// ```rust
-    /// use slice_ops::*;
+    /// use slice_ops::ops::*;
     /// 
     /// let mut values = [1, 2, 3, 4];
     /// 
