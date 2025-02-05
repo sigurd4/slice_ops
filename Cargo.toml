@@ -12,11 +12,11 @@ repository = "https://github.com/sigurd4/slice_ops"
 
 [features]
 default = ["alloc"]
-alloc = []
+alloc = ["slice_trait/alloc"]
 
 [dependencies]
 moddef = "0.2.6"
-slice_trait = "0.1.5"
+slice_trait = "0.1.9"
 #option_trait = "0.1.16"
 
 [dev-dependencies]
