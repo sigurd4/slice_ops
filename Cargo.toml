@@ -11,12 +11,14 @@ repository = "https://github.com/sigurd4/slice_ops"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = ["alloc"]
+default = ["alloc", "num"]
 alloc = ["slice_trait/alloc"]
+num = ["dep:num-complex"]
 
 [dependencies]
 moddef = "0.2.6"
 slice_trait = "0.1.9"
+num-complex = {version = "0.4.6", optional = true}
 #option_trait = "0.1.16"
 
 [dev-dependencies]

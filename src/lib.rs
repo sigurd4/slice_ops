@@ -14,6 +14,7 @@
 #![feature(maybe_uninit_array_assume_init)]
 #![feature(let_chains)]
 #![feature(core_intrinsics)]
+#![feature(specialization)]
 #![feature(generic_const_exprs)]
 
 //! Provides many useful utility methods for slices.
@@ -210,7 +211,8 @@ moddef::moddef!(
     pub mod {
         ops,
         future,
-        padded
+        padded,
+        spec
     },
     mod {
         private

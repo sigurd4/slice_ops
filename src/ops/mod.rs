@@ -10,6 +10,7 @@ moddef::moddef!(
         div_assign,
         find,
         integrate,
+        magnitude,
         mul_assign,
         neg_assign,
         not_assign,
