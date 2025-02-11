@@ -2,7 +2,7 @@ use core::ops::Mul;
 
 pub trait Square: Mul + Copy
 {
-    type Output: Sized + From<<Self as Mul>::Output>;
+    type Output: Sized;
 
     fn square(&self) -> <Self as Square>::Output;
 }
@@ -15,19 +15,23 @@ where
 
     default fn square(&self) -> <Self as Square>::Output
     {
-        (*self**self).into()
+        unsafe {
+            core::intrinsics::transmute_unchecked(*self**self)
+        }
     }
 }
 
 #[cfg(feature = "num")]
 impl<T> Square for T
 where
-    T: num_complex::ComplexFloat<Real: From<T>>
+    T: num_complex::ComplexFloat
 {
     type Output = T::Real;
 
     fn square(&self) -> <Self as Square>::Output
     {
-        (*self*self.conj()).into()
+        let re = self.re();
+        let im = self.im();
+        re*re + im*im
     }
 }
