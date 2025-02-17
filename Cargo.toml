@@ -17,7 +17,7 @@ num = ["dep:num-complex"]
 
 [dependencies]
 moddef = "0.2.6"
-slice_trait = "0.1.9"
+slice_trait = "0.2.0"
 num-complex = {version = "0.4.6", optional = true}
 #option_trait = "0.1.16"
 
