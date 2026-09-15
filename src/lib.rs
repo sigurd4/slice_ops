@@ -3,19 +3,17 @@
 #![feature(slice_from_ptr_range)]
 #![feature(allocator_api)]
 #![feature(const_eval_select)]
-#![feature(const_swap_nonoverlapping)]
 #![feature(const_slice_from_ptr_range)]
 #![feature(const_destruct)]
 #![feature(unboxed_closures)]
 #![allow(async_fn_in_trait)]
 #![allow(deprecated)]
 #![allow(internal_features)]
-#![feature(maybe_uninit_uninit_array)]
 #![feature(maybe_uninit_array_assume_init)]
-#![feature(let_chains)]
 #![feature(core_intrinsics)]
 #![feature(specialization)]
 #![feature(generic_const_exprs)]
+#![feature(rustc_attrs)]
 
 //! Provides many useful utility methods for slices.
 //!
