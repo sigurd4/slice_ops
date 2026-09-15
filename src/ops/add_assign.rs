@@ -1,11 +1,14 @@
+#[cfg(feature = "alloc")]
+use core::future::Future;
 use core::ops::AddAssign;
 
 use slice_trait::Slice;
 
 use super::SliceVisit;
 
-#[const_trait]
-pub trait SliceAddAssign<T>: Slice<Item = T>
+use core::iter::Iterator;
+
+pub const trait SliceAddAssign: Slice
 {
     /// Adds `rhs` to each element in the slice.
     /// 
@@ -22,7 +25,7 @@ pub trait SliceAddAssign<T>: Slice<Item = T>
     /// ```
     fn add_assign_all<Rhs>(&mut self, rhs: Rhs)
     where
-        T: AddAssign<Rhs>,
+        Self::Elem: AddAssign<Rhs>,
         Rhs: Copy;
         
     /// Asynchronously adds `rhs` to each element in the slice.
@@ -41,13 +44,14 @@ pub trait SliceAddAssign<T>: Slice<Item = T>
     /// # });
     /// ```
     #[cfg(feature = "alloc")]
-    async fn add_assign_all_async<Rhs>(&mut self, rhs: Rhs)
+    #[rustc_non_const_trait_method]
+    fn add_assign_all_async<Rhs>(&mut self, rhs: Rhs) -> impl Future<Output = ()>
     where
-        T: AddAssign<Rhs>,
+        Self::Elem: AddAssign<Rhs>,
         Rhs: Copy;
 }
 
-impl<T> SliceAddAssign<T> for [T]
+const impl<T> SliceAddAssign for [T]
 {
     fn add_assign_all<Rhs>(&mut self, rhs: Rhs)
     where
@@ -58,12 +62,12 @@ impl<T> SliceAddAssign<T> for [T]
     }
 
     #[cfg(feature = "alloc")]
-    async fn add_assign_all_async<Rhs>(&mut self, rhs: Rhs)
+    fn add_assign_all_async<Rhs>(&mut self, rhs: Rhs) -> impl Future<Output = ()>
     where
         T: AddAssign<Rhs>,
         Rhs: Copy
     {
-        self.visit_mut_async(async |x| *x += rhs).await
+        self.visit_mut_async(async |x| *x += rhs)
     }
 }
 
