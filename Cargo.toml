@@ -16,10 +16,11 @@ alloc = ["slice_trait/alloc"]
 num = ["dep:num-complex"]
 
 [dependencies]
-moddef = "0.2.6"
-slice_trait = "0.1.9"
+moddef = "0.3.0"
+slice_trait = "0.3.20"
+bulks = "0.10.0"
 num-complex = {version = "0.4.6", optional = true}
 #option_trait = "0.1.16"
 
 [dev-dependencies]
-tokio-test = "0.4.4"
+tokio-test = "0.4.5"
